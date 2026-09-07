@@ -110,6 +110,20 @@ Useful checks: `npx tsc --noEmit`, and backend tests with `cargo test`
 run from `src-tauri/` (search ranking, grep context windows, preview
 bounds are all covered).
 
+### Benchmarking
+
+`pnpm bench` launches the release binary and profiles its resource
+footprint over a series of runs — cold-start time, CPU (% per logical
+core), and RSS memory — reporting median/mean/min/max plus a
+machine-readable `__CMX_BENCH__` JSON line for CI.
+
+```sh
+pnpm bench                      # default: binary auto-discovered, 1 run
+pnpm bench --runs 5             # statistics over 5 launches
+pnpm bench --window 10000       # longer sampling window (default 5000 ms)
+pnpm bench --bin /path/to/cmx   # explicit binary
+```
+
 ## Project layout
 
 ```
@@ -131,25 +145,33 @@ cmx/
     src/commands.rs     # file IO, dir listing, find_files, live_grep, preview
     tauri.conf.json capabilities/  # windows, bundle, permission grants
   docs/screenshots/     # README images + SHOT-LIST.md capture guide
+  scripts/
+    capture_screenshots.mjs  # headless-Brave CDP screenshot capture
+    bench.mjs                # release-binary CPU/RAM/startup profiler
 ```
 
-## Performance notes
+## Performance
 
-Recent passes (all measured, all in `git log`):
+Measured with `pnpm bench` (release build, Apple Silicon / arm64, 8 GB
+RAM — 5 runs, median):
 
-- **A — interaction**: one `EditorView` reused across tabs (`setState`
-  instead of destroy/recreate); tree mutations patch nodes in place.
-- **B — bundle**: 14 language packs, `marked`, and non-default fonts load
-  on first use; CodeMirror core isolated in a vendor chunk. Initial JS
-  went 1,135KB → ~576KB raw (~393KB → ~190KB gzip).
-- **C — search**: generation-counter cancellation on both backends,
-  streaming grep (O(1) memory, skips locks/bundles/binaries), ranked
-  find, stale-result guards in the UI.
-- **D — typing/memory**: one store propagation per keystroke, 3×→2×
-  strings per tab, parallel session restore, single doc classification.
+| Metric | Value |
+|---|---|
+| Cold start to ready | ~2.4 s |
+| CPU — average | ~0.1% of one core |
+| CPU — peak | ~1.3% of one core |
+| Memory (RSS) — average | ~95 MB |
+| Memory (RSS) — peak | ~95 MB |
+| Peak memory vs physical RAM | ~1.2% |
 
-Release artifacts (Apple Silicon): **7.1MB binary · 6.3MB `.app` ·
-3.1MB `.dmg`**.
+Release artifacts: **6.7 MB binary · 6.9 MB `.app` · 3.6 MB `.dmg`** —
+no bundled Chromium.
+
+Reproduce with:
+
+```sh
+pnpm bench --runs 5
+```
 
 ---
 
