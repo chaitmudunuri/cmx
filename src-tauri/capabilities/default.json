@@ -1,0 +1,12 @@
+{
+  "identifier": "default",
+  "description": "Default capabilities for cmx editor",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "core:window:allow-start-dragging",
+    "dialog:default",
+    "dialog:allow-open",
+    "dialog:allow-save"
+  ]
+}

@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>cmx editor</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body, #root { height: 100%; overflow: hidden; }
+      body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #141416; }
+    </style>
+    <script>
+      // Pre-paint init: apply persisted theme + font size before the app
+      // module loads, so first paint isn't followed by a Solid-effect
+      // repaint (see App.tsx createEffects, which remain source of truth).
+      try {
+        var t = localStorage.getItem("cmx_theme") || "dark";
+        document.documentElement.setAttribute("data-theme", t);
+        document.body.style.background = t === "light" ? "#ffffff" : "#141416";
+        var fs = parseFloat(localStorage.getItem("cmx_font_size") || "13.5");
+        if (isFinite(fs)) {
+          document.documentElement.style.setProperty("--editor-font-size", Math.min(28, Math.max(10, fs)) + "px");
+        }
+      } catch (e) { /* private mode etc: fall back to defaults */ }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script src="/src/index.tsx" type="module"></script>
+  </body>
+</html>

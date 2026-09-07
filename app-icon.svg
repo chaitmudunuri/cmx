@@ -1,0 +1,24 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="macShadow" x="40" y="50" width="944" height="944" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="18" stdDeviation="20" flood-color="#000000" flood-opacity="0.32" />
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#000000" flood-opacity="0.2" />
+    </filter>
+    <linearGradient id="brandGrad" x1="100" y1="100" x2="924" y2="924" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#a78bfa" />
+      <stop offset="100%" stop-color="#6d28d9" />
+    </linearGradient>
+    <linearGradient id="borderGrad" x1="100" y1="100" x2="100" y2="924" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.35" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.05" />
+    </linearGradient>
+  </defs>
+
+  <!-- macOS Standard Squircle 824x824 centered inside 1024x1024 with Drop Shadow -->
+  <rect x="100" y="100" width="824" height="824" rx="185" fill="url(#brandGrad)" filter="url(#macShadow)" />
+  <rect x="101" y="101" width="822" height="822" rx="184" stroke="url(#borderGrad)" stroke-width="2" />
+
+  <!-- Glyphs -->
+  <path d="M360 375L495 512L360 649" stroke="#ffffff" stroke-width="68" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M545 649H680" stroke="#ffffff" stroke-width="68" stroke-linecap="round"/>
+</svg>
