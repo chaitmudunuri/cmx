@@ -8,6 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "bench": "node scripts/bench.mjs",
+    "site:build": "python3 scripts/build_site.py",
+    "site:preview": "python3 scripts/build_site.py --serve",
     "tauri": "tauri"
   },
   "dependencies": {

@@ -7,7 +7,7 @@
 <meta name="description" content="Install CMX on macOS, Linux and Windows, including Gatekeeper, WebKitGTK and WebView2 prerequisites, and how to open your first folder.">
 <link rel="canonical" href="https://chaitmudunuri.github.io/cmx/docs/installation.html">
 <meta name="theme-color" content="#141416">
-<meta name="color-scheme" content="dark">
+<meta name="color-scheme" content="light dark">
 
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="CMX">
@@ -23,43 +23,70 @@
 <meta name="twitter:description" content="Install CMX on macOS, Linux and Windows, including Gatekeeper, WebKitGTK and WebView2 prerequisites, and how to open your first folder.">
 <meta name="twitter:image" content="https://chaitmudunuri.github.io/cmx/social-preview.png">
 
-<link rel="stylesheet" href="/assets/site.css">
+<script>
+(function(){
+  try{
+    var t=localStorage.getItem('cmx-theme');
+    if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);
+  }catch(e){}
+})();
+</script>
+<script>window.__CMX_BASE__ = "/cmx";</script>
+<link rel="stylesheet" href="/cmx/assets/site.css">
 <link rel="icon" href="https://raw.githubusercontent.com/chaitmudunuri/cmx/main/app-icon.svg" type="image/svg+xml">
+<script defer src="/cmx/assets/site.js"></script>
 
 <script type="application/ld+json" id="schema_0">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Docs","item":"https://chaitmudunuri.github.io/cmx/docs.html"},{"@type":"ListItem","position":2,"name":"Installation","item":"https://chaitmudunuri.github.io/cmx/docs/installation.html"}]}</script>
 <script type="application/ld+json" id="schema_1">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"CMX","alternateName":"CMX editor","description":"A native-feeling code editor with Vim mode, workspace search, and live preview. No Electron, no bundled browser.","url":"https://chaitmudunuri.github.io/cmx/","applicationCategory":"DeveloperApplication","applicationSubCategory":"Text editor","operatingSystem":"macOS, Linux, Windows","softwareVersion":"0.1.0","license":"https://github.com/chaitmudunuri/cmx/blob/main/LICENSE","downloadUrl":"https://github.com/chaitmudunuri/cmx/releases/download/v0.1.0/cmx.editor_0.1.0_aarch64.dmg","installUrl":"https://chaitmudunuri.github.io/cmx/docs/installation.html","softwareHelp":"https://chaitmudunuri.github.io/cmx/docs.html","releaseNotes":"https://github.com/chaitmudunuri/cmx/releases/tag/v0.1.0","image":"https://chaitmudunuri.github.io/cmx/social-preview.png","author":{"@type":"Person","name":"chaitmudunuri","url":"https://github.com/chaitmudunuri"},"maintainer":{"@type":"Person","name":"chaitmudunuri"},"offers":[{"@type":"Offer","price":"0","priceCurrency":"USD"}],"featureList":["Vim mode with Friendly and Expert levels","Workspace-wide search that respects .gitignore","Quick Open ranked file finder","Live preview for Markdown, HTML and SVG","Large-file fast mode","Dark and light themes"],"codeRepository":"https://github.com/chaitmudunuri/cmx","programmingLanguage":["Rust","TypeScript"]}</script>
 </head>
 <body>
+<a href="#main" class="skip-link">Skip to main content</a>
 <header class="site">
   <div class="wrap bar">
-    <a class="brand" href="/">CMX</a>
-    <nav aria-label="Main"><a href="/features.html">Features</a><a href="/performance.html">Performance</a><a href="/downloads.html">Download</a><div class="has-sub"><a href="/docs.html">Docs</a><div class="sub"><a href="/docs/installation.html">Installation</a><a href="/docs/shortcuts.html">Keyboard shortcuts</a><a href="/docs/configuration.html">Configuration</a><a href="/docs/troubleshooting.html">Troubleshooting</a><a href="/docs/development.html">Developer setup</a></div></div><a href="/contributing.html">Contributing</a><a class="gh" href="https://github.com/chaitmudunuri/cmx" rel="noopener">GitHub</a></nav>
+    <div class="bar-left">
+      <a class="brand" href="/cmx/">CMX</a>
+      <button id="search-btn" class="search-btn" type="button" aria-label="Search documentation" title="Search documentation (⌘K)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <span>Search</span>
+        <kbd class="kbd-hint">⌘K</kbd>
+      </button>
+    </div>
+    <div class="bar-right">
+      <nav id="site-nav" class="nav-menu" aria-label="Main"><a href="/cmx/features.html">Features</a><a href="/cmx/performance.html">Performance</a><a href="/cmx/downloads.html">Download</a><div class="has-sub"><a href="/cmx/docs.html">Docs</a><div class="sub"><a href="/cmx/docs/installation.html">Installation</a><a href="/cmx/docs/shortcuts.html">Keyboard shortcuts</a><a href="/cmx/docs/configuration.html">Configuration</a><a href="/cmx/docs/troubleshooting.html">Troubleshooting</a><a href="/cmx/docs/development.html">Developer setup</a></div></div><a href="/cmx/contributing.html">Contributing</a><a class="gh" href="https://github.com/chaitmudunuri/cmx" rel="noopener">GitHub</a></nav>
+      <button id="theme-toggle" class="theme-btn" type="button" aria-label="Toggle theme" title="Toggle theme">
+        <svg class="sun-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        <svg class="moon-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+      </button>
+      <button id="nav-toggle" class="nav-toggle" type="button" aria-label="Toggle navigation menu" aria-expanded="false">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+      </button>
+    </div>
   </div>
 </header>
 <main id="main">
   <div class="wrap">
-<ol class="crumbs"><li><a href="/docs.html">Docs</a></li><li><a href="/docs/installation.html">Installation</a></li></ol>
-<div class="layout"><article><h1>Installation</h1>
+<ol class="crumbs"><li><a href="/cmx/docs.html">Docs</a></li><li><a href="/cmx/docs/installation.html">Installation</a></li></ol>
+<h1>Installation</h1><div class="layout"><article>
 <p class="lede">CMX runs on macOS, Linux and Windows. Prebuilt binaries exist for macOS on Apple
 Silicon; the other platforms build from source in about two minutes.</p>
 
-<h2 id="macos">macOS</h2>
-<h3>1. Download</h3>
+<h2 id="macos">macOS<a class="heading-anchor" href="#macos" aria-label="Link to section">#</a></h2>
+<h3 id="1-download">1. Download<a class="heading-anchor" href="#1-download" aria-label="Link to section">#</a></h3>
 <p>Grab the <code>.dmg</code> from the
 <a href="https://github.com/chaitmudunuri/cmx/releases/latest">latest release</a>, or see
-<a href="/downloads.html#macos">the download page</a> for a copy-pasteable command.</p>
-<h3>2. Install</h3>
+<a href="/cmx/downloads.html#macos">the download page</a> for a copy-pasteable command.</p>
+<h3 id="2-install">2. Install<a class="heading-anchor" href="#2-install" aria-label="Link to section">#</a></h3>
 <p>Open the <code>.dmg</code> and drag <b>cmx editor</b> into Applications.</p>
-<h3>3. First launch</h3>
+<h3 id="3-first-launch">3. First launch<a class="heading-anchor" href="#3-first-launch" aria-label="Link to section">#</a></h3>
 <p>CMX is not code-signed, so macOS blocks it on first run. Either right-click the app and choose
 <b>Open</b>, or run:</p>
 <pre><code>xattr -dr com.apple.quarantine "/Applications/cmx editor.app"</code></pre>
-<h3>4. Open a folder</h3>
+<h3 id="4-open-a-folder">4. Open a folder<a class="heading-anchor" href="#4-open-a-folder" aria-label="Link to section">#</a></h3>
 <p>Launch CMX, then use <b>Open folder</b> in the file explorer to point it at a project. CMX
 restores your last session — open tabs, folder and untitled buffers — on next launch.</p>
 
-<h2 id="linux">Linux</h2>
-<h3>1. Install the toolchain</h3>
+<h2 id="linux">Linux<a class="heading-anchor" href="#linux" aria-label="Link to section">#</a></h2>
+<h3 id="1-install-the-toolchain">1. Install the toolchain<a class="heading-anchor" href="#1-install-the-toolchain" aria-label="Link to section">#</a></h3>
 <p>CMX renders through WebKitGTK, so its build and runtime dependencies must be present:</p>
 <pre><code># Debian / Ubuntu
 sudo apt install libwebkit2gtk-4.1-dev build-essential curl wget file \
@@ -68,11 +95,11 @@ sudo apt install libwebkit2gtk-4.1-dev build-essential curl wget file \
 # Fedora
 sudo dnf install webkit2gtk4.1-devel openssl-devel libxdo-devel \
   libappindicator-gtk3-devel librsvg2-devel</code></pre>
-<h3>2. Install Rust and Node</h3>
+<h3 id="2-install-rust-and-node">2. Install Rust and Node<a class="heading-anchor" href="#2-install-rust-and-node" aria-label="Link to section">#</a></h3>
 <pre><code>curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
 sudo apt install -y nodejs</code></pre>
-<h3>3. Build</h3>
+<h3 id="3-build">3. Build<a class="heading-anchor" href="#3-build" aria-label="Link to section">#</a></h3>
 <pre><code>git clone https://github.com/chaitmudunuri/cmx.git
 cd cmx
 corepack enable &amp;&amp; corepack prepare pnpm@latest --activate
@@ -80,8 +107,8 @@ pnpm install
 pnpm tauri build</code></pre>
 <p>Bundles land in <code>src-tauri/target/release/bundle/</code>.</p>
 
-<h2 id="windows">Windows</h2>
-<h3>1. Install the prerequisites</h3>
+<h2 id="windows">Windows<a class="heading-anchor" href="#windows" aria-label="Link to section">#</a></h2>
+<h3 id="1-install-the-prerequisites">1. Install the prerequisites<a class="heading-anchor" href="#1-install-the-prerequisites" aria-label="Link to section">#</a></h3>
 <p>Install <a href="https://rustup.rs">Rust</a> and
 <a href="https://nodejs.org">Node 20+</a>. The
 <a href="https://developer.microsoft.com/microsoft-edge/webview2/">WebView2 runtime</a> is
@@ -89,22 +116,22 @@ pre-installed on Windows 11; on Windows 10 install the Evergreen runtime.</p>
 <p>Building the NSIS installer additionally needs the
 <a href="https://visualstudio.microsoft.com/downloads/">Visual Studio Build Tools</a> with the
 <b>Desktop development with C++</b> workload.</p>
-<h3>2. Build</h3>
+<h3 id="2-build">2. Build<a class="heading-anchor" href="#2-build" aria-label="Link to section">#</a></h3>
 <pre><code>git clone https://github.com/chaitmudunuri/cmx.git
 cd cmx
 corepack enable
 pnpm install
 pnpm tauri dev      # try it without a full bundle</code></pre>
-<h3>3. Package</h3>
+<h3 id="3-package">3. Package<a class="heading-anchor" href="#3-package" aria-label="Link to section">#</a></h3>
 <pre><code>pnpm tauri build --bundles nsis</code></pre>
 
-<h2 id="updating">Updating</h2>
+<h2 id="updating">Updating<a class="heading-anchor" href="#updating" aria-label="Link to section">#</a></h2>
 <p>CMX does not self-update. Replace the binary or re-run the installer from the
 <a href="https://github.com/chaitmudunuri/cmx/releases/latest">latest release</a>. Your settings live in local storage and survive
 an upgrade.</p>
 
-<h2 id="if-something-goes-wrong">If something goes wrong</h2>
-<p>See <a href="/docs/troubleshooting.html">troubleshooting</a>. If it is not covered there,
+<h2 id="if-something-goes-wrong">If something goes wrong<a class="heading-anchor" href="#if-something-goes-wrong" aria-label="Link to section">#</a></h2>
+<p>See <a href="/cmx/docs/troubleshooting.html">troubleshooting</a>. If it is not covered there,
 <a href="https://github.com/chaitmudunuri/cmx/issues/new/choose" rel="noopener">open an issue</a> with your platform and
 version.</p>
 </article><aside class="aside"><nav class="toc" aria-label="On this page"><p class="toc-title">On this page</p><ol><li><a href="#macos">macOS</a></li><li><a href="#linux">Linux</a></li><li><a href="#windows">Windows</a></li><li><a href="#updating">Updating</a></li><li><a href="#if-something-goes-wrong">If something goes wrong</a></li></ol></nav></aside></div>
@@ -118,14 +145,30 @@ version.</p>
       <a href="https://www.solidjs.com">Solid.js</a>, in Rust.
       The <a href="https://github.com/chaitmudunuri/cmx">GitHub repository</a> is the source of truth for the code.</p>
     <nav aria-label="Footer">
-      <a href="/features.html">Features</a>
-      <a href="/performance.html">Performance</a>
-      <a href="/downloads.html">Download</a>
-      <a href="/docs.html">Docs</a>
-      <a href="/contributing.html">Contributing</a>
+      <a href="/cmx/features.html">Features</a>
+      <a href="/cmx/performance.html">Performance</a>
+      <a href="/cmx/downloads.html">Download</a>
+      <a href="/cmx/docs.html">Docs</a>
+      <a href="/cmx/contributing.html">Contributing</a>
       <a href="https://github.com/chaitmudunuri/cmx">GitHub</a>
     </nav>
   </div>
 </footer>
+<div id="search-modal" class="search-modal" hidden>
+  <div class="search-backdrop"></div>
+  <div class="search-box" role="dialog" aria-modal="true" aria-label="Search documentation">
+    <div class="search-head">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <input id="search-input" class="search-input" type="search" placeholder="Search docs, features, shortcuts... (Esc to close)" autocomplete="off" spellcheck="false">
+      <kbd class="search-esc">ESC</kbd>
+    </div>
+    <div id="search-results" class="search-results"></div>
+    <div class="search-foot">
+      <span><kbd>↑</kbd><kbd>↓</kbd> navigate</span>
+      <span><kbd>↵</kbd> select</span>
+      <span><kbd>ESC</kbd> close</span>
+    </div>
+  </div>
+</div>
 </body>
 </html>

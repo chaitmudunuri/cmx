@@ -7,7 +7,7 @@
 <meta name="description" content="Configure CMX: dark and light themes, six bundled monospace fonts, text size, tab size, word wrap and the three Vim mode levels.">
 <link rel="canonical" href="https://chaitmudunuri.github.io/cmx/docs/configuration.html">
 <meta name="theme-color" content="#141416">
-<meta name="color-scheme" content="dark">
+<meta name="color-scheme" content="light dark">
 
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="CMX">
@@ -23,30 +23,57 @@
 <meta name="twitter:description" content="Configure CMX: dark and light themes, six bundled monospace fonts, text size, tab size, word wrap and the three Vim mode levels.">
 <meta name="twitter:image" content="https://chaitmudunuri.github.io/cmx/social-preview.png">
 
-<link rel="stylesheet" href="/assets/site.css">
+<script>
+(function(){
+  try{
+    var t=localStorage.getItem('cmx-theme');
+    if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);
+  }catch(e){}
+})();
+</script>
+<script>window.__CMX_BASE__ = "/cmx";</script>
+<link rel="stylesheet" href="/cmx/assets/site.css">
 <link rel="icon" href="https://raw.githubusercontent.com/chaitmudunuri/cmx/main/app-icon.svg" type="image/svg+xml">
+<script defer src="/cmx/assets/site.js"></script>
 
 <script type="application/ld+json" id="schema_0">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Docs","item":"https://chaitmudunuri.github.io/cmx/docs.html"},{"@type":"ListItem","position":2,"name":"Configuration","item":"https://chaitmudunuri.github.io/cmx/docs/configuration.html"}]}</script>
 <script type="application/ld+json" id="schema_1">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"CMX","alternateName":"CMX editor","description":"A native-feeling code editor with Vim mode, workspace search, and live preview. No Electron, no bundled browser.","url":"https://chaitmudunuri.github.io/cmx/","applicationCategory":"DeveloperApplication","applicationSubCategory":"Text editor","operatingSystem":"macOS, Linux, Windows","softwareVersion":"0.1.0","license":"https://github.com/chaitmudunuri/cmx/blob/main/LICENSE","downloadUrl":"https://github.com/chaitmudunuri/cmx/releases/download/v0.1.0/cmx.editor_0.1.0_aarch64.dmg","installUrl":"https://chaitmudunuri.github.io/cmx/docs/installation.html","softwareHelp":"https://chaitmudunuri.github.io/cmx/docs.html","releaseNotes":"https://github.com/chaitmudunuri/cmx/releases/tag/v0.1.0","image":"https://chaitmudunuri.github.io/cmx/social-preview.png","author":{"@type":"Person","name":"chaitmudunuri","url":"https://github.com/chaitmudunuri"},"maintainer":{"@type":"Person","name":"chaitmudunuri"},"offers":[{"@type":"Offer","price":"0","priceCurrency":"USD"}],"featureList":["Vim mode with Friendly and Expert levels","Workspace-wide search that respects .gitignore","Quick Open ranked file finder","Live preview for Markdown, HTML and SVG","Large-file fast mode","Dark and light themes"],"codeRepository":"https://github.com/chaitmudunuri/cmx","programmingLanguage":["Rust","TypeScript"]}</script>
 </head>
 <body>
+<a href="#main" class="skip-link">Skip to main content</a>
 <header class="site">
   <div class="wrap bar">
-    <a class="brand" href="/">CMX</a>
-    <nav aria-label="Main"><a href="/features.html">Features</a><a href="/performance.html">Performance</a><a href="/downloads.html">Download</a><div class="has-sub"><a href="/docs.html">Docs</a><div class="sub"><a href="/docs/installation.html">Installation</a><a href="/docs/shortcuts.html">Keyboard shortcuts</a><a href="/docs/configuration.html">Configuration</a><a href="/docs/troubleshooting.html">Troubleshooting</a><a href="/docs/development.html">Developer setup</a></div></div><a href="/contributing.html">Contributing</a><a class="gh" href="https://github.com/chaitmudunuri/cmx" rel="noopener">GitHub</a></nav>
+    <div class="bar-left">
+      <a class="brand" href="/cmx/">CMX</a>
+      <button id="search-btn" class="search-btn" type="button" aria-label="Search documentation" title="Search documentation (⌘K)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <span>Search</span>
+        <kbd class="kbd-hint">⌘K</kbd>
+      </button>
+    </div>
+    <div class="bar-right">
+      <nav id="site-nav" class="nav-menu" aria-label="Main"><a href="/cmx/features.html">Features</a><a href="/cmx/performance.html">Performance</a><a href="/cmx/downloads.html">Download</a><div class="has-sub"><a href="/cmx/docs.html">Docs</a><div class="sub"><a href="/cmx/docs/installation.html">Installation</a><a href="/cmx/docs/shortcuts.html">Keyboard shortcuts</a><a href="/cmx/docs/configuration.html">Configuration</a><a href="/cmx/docs/troubleshooting.html">Troubleshooting</a><a href="/cmx/docs/development.html">Developer setup</a></div></div><a href="/cmx/contributing.html">Contributing</a><a class="gh" href="https://github.com/chaitmudunuri/cmx" rel="noopener">GitHub</a></nav>
+      <button id="theme-toggle" class="theme-btn" type="button" aria-label="Toggle theme" title="Toggle theme">
+        <svg class="sun-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        <svg class="moon-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+      </button>
+      <button id="nav-toggle" class="nav-toggle" type="button" aria-label="Toggle navigation menu" aria-expanded="false">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+      </button>
+    </div>
   </div>
 </header>
 <main id="main">
   <div class="wrap">
-<ol class="crumbs"><li><a href="/docs.html">Docs</a></li><li><a href="/docs/configuration.html">Configuration</a></li></ol>
-<div class="layout"><article><h1>Configuration</h1>
+<ol class="crumbs"><li><a href="/cmx/docs.html">Docs</a></li><li><a href="/cmx/docs/configuration.html">Configuration</a></li></ol>
+<h1>Configuration</h1><div class="layout"><article>
 <p class="lede">Open settings with <code>⌘,</code>. Changes save automatically — there is no save
 button and no settings file to edit.</p>
 <p><a href="https://github.com/chaitmudunuri/cmx"><img class="shot"
-  src="/screenshots/05-settings.png" width="1380" height="723" loading="lazy"
+  src="/cmx/screenshots/05-settings.png" width="1380" height="723" loading="lazy"
   alt="CMX code editor showing the settings dialog with Vim mode, text size, tab size and font options."></a></p>
 
-<h2 id="settings">Settings</h2>
+<h2 id="settings">Settings<a class="heading-anchor" href="#settings" aria-label="Link to section">#</a></h2>
 <table>
 <thead><tr><th>Setting</th><th>Options</th><th>Notes</th></tr></thead>
 <tbody>
@@ -59,7 +86,7 @@ button and no settings file to edit.</p>
 </tbody>
 </table>
 
-<h2 id="fonts">Fonts</h2>
+<h2 id="fonts">Fonts<a class="heading-anchor" href="#fonts" aria-label="Link to section">#</a></h2>
 <p>CMX bundles six monospace faces and renders them without a network round trip:</p>
 <ul class="tags">
 <li>JetBrains Mono</li><li>Fira Code</li><li>Source Code Pro</li>
@@ -67,16 +94,16 @@ button and no settings file to edit.</p>
 </ul>
 <p>JetBrains Mono is the default and is the one with ligatures enabled.</p>
 
-<h2 id="where-settings-live">Where settings live</h2>
+<h2 id="where-settings-live">Where settings live<a class="heading-anchor" href="#where-settings-live" aria-label="Link to section">#</a></h2>
 <p>Settings are written to web storage in the app's local data directory, keyed by
 <code>cmx_*</code> entries. They persist across upgrades and are not synced between machines.
 CMX deliberately has no account system and sends no telemetry, so there is nothing to sign in to
 and nothing to lose.</p>
 <p class="note">Portable configuration profiles are on the
-<a href="/contributing.html#roadmap">roadmap</a>, not yet implemented. If you want settings under
+<a href="/cmx/contributing.html#roadmap">roadmap</a>, not yet implemented. If you want settings under
 version control today, note the storage keys above and script them.</p>
 
-<h2 id="theme">Theme</h2>
+<h2 id="theme">Theme<a class="heading-anchor" href="#theme" aria-label="Link to section">#</a></h2>
 <p>Two themes ship with CMX: a dark theme and a GitHub-style light theme. CMX applies the theme
 before first paint, so there is no flash of the wrong colours on launch.</p>
 </article><aside class="aside"><nav class="toc" aria-label="On this page"><p class="toc-title">On this page</p><ol><li><a href="#settings">Settings</a></li><li><a href="#fonts">Fonts</a></li><li><a href="#where-settings-live">Where settings live</a></li><li><a href="#theme">Theme</a></li></ol></nav></aside></div>
@@ -90,14 +117,30 @@ before first paint, so there is no flash of the wrong colours on launch.</p>
       <a href="https://www.solidjs.com">Solid.js</a>, in Rust.
       The <a href="https://github.com/chaitmudunuri/cmx">GitHub repository</a> is the source of truth for the code.</p>
     <nav aria-label="Footer">
-      <a href="/features.html">Features</a>
-      <a href="/performance.html">Performance</a>
-      <a href="/downloads.html">Download</a>
-      <a href="/docs.html">Docs</a>
-      <a href="/contributing.html">Contributing</a>
+      <a href="/cmx/features.html">Features</a>
+      <a href="/cmx/performance.html">Performance</a>
+      <a href="/cmx/downloads.html">Download</a>
+      <a href="/cmx/docs.html">Docs</a>
+      <a href="/cmx/contributing.html">Contributing</a>
       <a href="https://github.com/chaitmudunuri/cmx">GitHub</a>
     </nav>
   </div>
 </footer>
+<div id="search-modal" class="search-modal" hidden>
+  <div class="search-backdrop"></div>
+  <div class="search-box" role="dialog" aria-modal="true" aria-label="Search documentation">
+    <div class="search-head">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <input id="search-input" class="search-input" type="search" placeholder="Search docs, features, shortcuts... (Esc to close)" autocomplete="off" spellcheck="false">
+      <kbd class="search-esc">ESC</kbd>
+    </div>
+    <div id="search-results" class="search-results"></div>
+    <div class="search-foot">
+      <span><kbd>↑</kbd><kbd>↓</kbd> navigate</span>
+      <span><kbd>↵</kbd> select</span>
+      <span><kbd>ESC</kbd> close</span>
+    </div>
+  </div>
+</div>
 </body>
 </html>

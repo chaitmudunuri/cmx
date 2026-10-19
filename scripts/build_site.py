@@ -16,10 +16,12 @@ JSON-LD block follow automatically.
 
 from __future__ import annotations
 
+import argparse
 import datetime
 import html
 import pathlib
 import re
+import urllib.parse
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 OUT = ROOT / "docs"
@@ -29,6 +31,7 @@ OUT = ROOT / "docs"
 # ---------------------------------------------------------------------------
 
 SITE_URL = "https://chaitmudunuri.github.io/cmx"
+BASE_PATH = urllib.parse.urlparse(SITE_URL).path.rstrip("/")
 REPO_URL = "https://github.com/chaitmudunuri/cmx"
 RELEASES_URL = f"{REPO_URL}/releases"
 LATEST_URL = f"{RELEASES_URL}/latest"
@@ -157,20 +160,46 @@ def breadcrumb_schema(trail: list[tuple[str, str]]) -> dict:
 # Chrome
 # ---------------------------------------------------------------------------
 
+def link(p: str) -> str:
+    """Resolve an internal path against BASE_PATH."""
+    if not p:
+        return f"{BASE_PATH}/" if BASE_PATH else "/"
+    if p.startswith(("http://", "https://", "mailto:", "data:", "#")):
+        return p
+    clean = "/" + p.lstrip("/")
+    return f"{BASE_PATH}{clean}" if BASE_PATH else clean
+
+
+def resolve_urls(html_text: str) -> str:
+    """Rewrite root-relative href and src attributes to prepend BASE_PATH."""
+    if not BASE_PATH:
+        return html_text
+
+    def repl(m: re.Match) -> str:
+        attr = m.group(1)
+        target = m.group(2)
+        if target.startswith("/") and not target.startswith("//") and not target.startswith(f"{BASE_PATH}/"):
+            return f'{attr}="{BASE_PATH}{target}"'
+        return m.group(0)
+
+    return re.sub(r'\b(href|src)="(/[^"]*)"', repl, html_text)
+
+
 def nav_html(current: str) -> str:
     items = []
     for label, href in NAV:
         cls = ' class="on"' if href == current else ""
+        dest = link(href)
         if href == "/docs.html":
             subs = "".join(
-                f'<a href="{h}">{html.escape(n)}</a>' for n, h in DOCS_NAV
+                f'<a href="{link(h)}">{html.escape(n)}</a>' for n, h in DOCS_NAV
             )
             items.append(
-                f'<div class="has-sub"{cls}><a href="{href}">{label}</a>'
+                f'<div class="has-sub"{cls}><a href="{dest}">{label}</a>'
                 f'<div class="sub">{subs}</div></div>'
             )
         else:
-            items.append(f'<a href="{href}"{cls}>{label}</a>')
+            items.append(f'<a href="{dest}"{cls}>{label}</a>')
     items.append(
         f'<a class="gh" href="{REPO_URL}" rel="noopener">GitHub</a>'
     )
@@ -200,7 +229,7 @@ def head(title: str, description: str, canonical: str, og_type: str,
 <meta name="description" content="{html.escape(description, quote=True)}">
 <link rel="canonical" href="{canonical}">
 <meta name="theme-color" content="#141416">
-<meta name="color-scheme" content="dark">
+<meta name="color-scheme" content="light dark">
 
 <meta property="og:type" content="{og_type}">
 <meta property="og:site_name" content="{NAME}">
@@ -216,8 +245,18 @@ def head(title: str, description: str, canonical: str, og_type: str,
 <meta name="twitter:description" content="{html.escape(description, quote=True)}">
 <meta name="twitter:image" content="{OG_IMAGE}">
 
-<link rel="stylesheet" href="/assets/site.css">
+<script>
+(function(){{
+  try{{
+    var t=localStorage.getItem('cmx-theme');
+    if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);
+  }}catch(e){{}}
+}})();
+</script>
+<script>window.__CMX_BASE__ = "{BASE_PATH}";</script>
+<link rel="stylesheet" href="{link('/assets/site.css')}">
 <link rel="icon" href="https://raw.githubusercontent.com/{AUTHOR}/cmx/main/app-icon.svg" type="image/svg+xml">
+<script defer src="{link('/assets/site.js')}"></script>
 {ld}
 </head>"""
 
@@ -230,31 +269,28 @@ def json_min(obj) -> str:
 def breadcrumbs_html(trail: list[tuple[str, str]]) -> str:
     parts = []
     for name, href in trail:
-        parts.append(f'<li><a href="{href}">{html.escape(name)}</a></li>')
+        parts.append(f'<li><a href="{link(href)}">{html.escape(name)}</a></li>')
     return f'<ol class="crumbs">{"".join(parts)}</ol>'
 
 
 def auto_id_headings(body: str) -> str:
-    """Give every <h2> a stable id so the on-page contents list is complete.
-
-    Hand-authored ids win; anything missing is derived from the heading text.
-    """
+    """Give every <h2> and <h3> a stable id and a permalink anchor."""
     seen: set[str] = set()
 
     def repl(m: re.Match) -> str:
-        frag, inner = m.group(1), m.group(2)
-        if frag:
-            seen.add(frag)
-            return m.group(0)
-        base = slug(html.unescape(re.sub(r"<[^>]+>", "", inner)).strip())
-        frag, n = base, 2
-        while frag in seen:
-            frag = f"{base}-{n}"
-            n += 1
+        tag, frag, inner = m.group(1), m.group(2), m.group(3)
+        if not frag:
+            clean = html.unescape(re.sub(r"<[^>]+>", "", inner)).strip()
+            base = slug(clean)
+            frag, n = base, 2
+            while frag in seen:
+                frag = f"{base}-{n}"
+                n += 1
         seen.add(frag)
-        return f'<h2 id="{frag}">{inner}</h2>'
+        anchor = f'<a class="heading-anchor" href="#{frag}" aria-label="Link to section">#</a>'
+        return f'<{tag} id="{frag}">{inner}{anchor}</{tag}>'
 
-    return re.sub(r'<h2(?: id="([^"]+)")?>(.*?)</h2>', repl, body, flags=re.S)
+    return re.sub(r'<(h[23])(?: id="([^"]+)")?>(.*?)</\1>', repl, body, flags=re.S)
 
 
 def slug(text: str) -> str:
@@ -271,13 +307,14 @@ def extract_toc(body: str) -> list[tuple[str, str]]:
     """
     out = []
     for frag, title in re.findall(r'<h2 id="([^"]+)">(.*?)</h2>', body, re.S):
-        out.append((frag, html.unescape(re.sub(r"<[^>]+>", "", title)).strip()))
+        clean = html.unescape(re.sub(r"<[^>]+>", "", title)).strip().rstrip("#").strip()
+        out.append((frag, clean))
     return out
 
 
 def page(*, path: str, title: str, description: str, h1: str, body: str,
          og_type: str = "website", trail: list[tuple[str, str]] | None = None,
-         extra_schema: list[dict] | None = None) -> tuple[str, str]:
+         extra_schema: list[dict] | None = None, show_toc: bool | None = None) -> tuple[str, str]:
     canonical = f"{SITE_URL}{path if path.endswith('.html') else path + '/'}"
     schemas = list(extra_schema or [])
     if trail:
@@ -289,22 +326,44 @@ def page(*, path: str, title: str, description: str, h1: str, body: str,
 
     body = auto_id_headings(body)
     toc = extract_toc(body)
-    if len(toc) >= MIN_TOC_ENTRIES:
+
+    if show_toc is None:
+        show_toc = len(toc) >= MIN_TOC_ENTRIES and path != "/index.html"
+
+    if show_toc:
         items = "".join(f'<li><a href="#{f}">{html.escape(t)}</a></li>' for f, t in toc)
         aside = (f'<aside class="aside"><nav class="toc" aria-label="On this page">'
                  f'<p class="toc-title">On this page</p><ol>{items}</ol>'
                  f'</nav></aside>')
-        content = (f'<div class="layout"><article>{h1_html}{body}</article>'
+        content = (f'{h1_html}<div class="layout"><article>{body}</article>'
                    f'{aside}</div>')
     else:
-        content = f"<article>{h1_html}{body}</article>"
+        cls = "landing" if path == "/index.html" else ""
+        content = f'<article class="{cls}">{h1_html}{body}</article>'
 
     doc = f"""{head(title, description, canonical, og_type, schemas)}
 <body>
+<a href="#main" class="skip-link">Skip to main content</a>
 <header class="site">
   <div class="wrap bar">
-    <a class="brand" href="/">CMX</a>
-    <nav aria-label="Main">{nav_html(path)}</nav>
+    <div class="bar-left">
+      <a class="brand" href="{link('/')}">CMX</a>
+      <button id="search-btn" class="search-btn" type="button" aria-label="Search documentation" title="Search documentation (⌘K)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <span>Search</span>
+        <kbd class="kbd-hint">⌘K</kbd>
+      </button>
+    </div>
+    <div class="bar-right">
+      <nav id="site-nav" class="nav-menu" aria-label="Main">{nav_html(path)}</nav>
+      <button id="theme-toggle" class="theme-btn" type="button" aria-label="Toggle theme" title="Toggle theme">
+        <svg class="sun-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        <svg class="moon-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+      </button>
+      <button id="nav-toggle" class="nav-toggle" type="button" aria-label="Toggle navigation menu" aria-expanded="false">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+      </button>
+    </div>
   </div>
 </header>
 <main id="main">
@@ -321,25 +380,37 @@ def page(*, path: str, title: str, description: str, h1: str, body: str,
       <a href="https://www.solidjs.com">Solid.js</a>, in Rust.
       The <a href="{REPO_URL}">GitHub repository</a> is the source of truth for the code.</p>
     <nav aria-label="Footer">
-      <a href="/features.html">Features</a>
-      <a href="/performance.html">Performance</a>
-      <a href="/downloads.html">Download</a>
-      <a href="/docs.html">Docs</a>
-      <a href="/contributing.html">Contributing</a>
+      <a href="{link('/features.html')}">Features</a>
+      <a href="{link('/performance.html')}">Performance</a>
+      <a href="{link('/downloads.html')}">Download</a>
+      <a href="{link('/docs.html')}">Docs</a>
+      <a href="{link('/contributing.html')}">Contributing</a>
       <a href="{REPO_URL}">GitHub</a>
     </nav>
   </div>
 </footer>
+<div id="search-modal" class="search-modal" hidden>
+  <div class="search-backdrop"></div>
+  <div class="search-box" role="dialog" aria-modal="true" aria-label="Search documentation">
+    <div class="search-head">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <input id="search-input" class="search-input" type="search" placeholder="Search docs, features, shortcuts... (Esc to close)" autocomplete="off" spellcheck="false">
+      <kbd class="search-esc">ESC</kbd>
+    </div>
+    <div id="search-results" class="search-results"></div>
+    <div class="search-foot">
+      <span><kbd>↑</kbd><kbd>↓</kbd> navigate</span>
+      <span><kbd>↵</kbd> select</span>
+      <span><kbd>ESC</kbd> close</span>
+    </div>
+  </div>
+</div>
 </body>
 </html>
 """
     slug = path.lstrip("/") or "index.html"
+    doc = resolve_urls(doc)
     return f"{slug}.html" if not slug.endswith(".html") else slug, doc
-
-
-def link(slug: str) -> str:
-    """Root-relative URL for a page slug produced by page()."""
-    return "/" + slug
 
 
 # ---------------------------------------------------------------------------
@@ -349,8 +420,8 @@ def link(slug: str) -> str:
 CSS = r"""
 /* ------------------------------------------------------------------ *
  * CMX website stylesheet.
- * Light and dark are both first-class. The OS preference wins; CMX is a
- * developer product but the site is read in daylight as often as at night.
+ * Light and dark are both first-class. The OS preference wins by default,
+ * with manual override via data-theme attribute on <html>.
  * ------------------------------------------------------------------ */
 
 :root{
@@ -377,7 +448,7 @@ CSS = r"""
 }
 
 @media (prefers-color-scheme: dark){
-  :root{
+  :root:not([data-theme="light"]){
     --bg:#0d1117;
     --surface:#161b22;
     --surface-2:#1c2330;
@@ -398,6 +469,46 @@ CSS = r"""
   }
 }
 
+html[data-theme="dark"]{
+  --bg:#0d1117;
+  --surface:#161b22;
+  --surface-2:#1c2330;
+  --border:#30363d;
+  --border-strong:#4a5560;
+  --text:#e6edf3;
+  --text-soft:#a8b3bf;
+  --text-faint:#7d8792;
+  --accent:#4493f8;
+  --accent-soft:#121d2f;
+  --accent-text:#6cb6ff;
+  --accent-2:#3fb950;
+  --code-bg:#1b2028;
+  --shadow:0 1px 3px rgba(1,4,9,.5), 0 8px 24px rgba(1,4,9,.4);
+  --shadow-lg:0 2px 8px rgba(1,4,9,.6), 0 18px 44px rgba(1,4,9,.5);
+  --ring:#4493f855;
+  --accent-wash:68,147,248;
+}
+
+html[data-theme="light"]{
+  --bg:#ffffff;
+  --surface:#f6f8fa;
+  --surface-2:#eef1f4;
+  --border:#d8dee4;
+  --border-strong:#b9c1ca;
+  --text:#1f2328;
+  --text-soft:#57606a;
+  --text-faint:#818b98;
+  --accent:#0969da;
+  --accent-soft:#ddf4ff;
+  --accent-text:#0550ae;
+  --accent-2:#1a7f37;
+  --code-bg:#eff1f3;
+  --shadow:0 1px 3px rgba(31,35,40,.08), 0 8px 24px rgba(31,35,40,.06);
+  --shadow-lg:0 2px 6px rgba(31,35,40,.10), 0 16px 40px rgba(31,35,40,.10);
+  --ring:#0969da33;
+  --accent-wash:9,105,218;
+}
+
 *,*::before,*::after{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;scroll-padding-top:84px}
 body{
@@ -407,8 +518,16 @@ body{
   font:17px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
   -webkit-font-smoothing:antialiased;
   text-rendering:optimizeLegibility;
+  transition:background-color .2s ease,color .2s ease;
 }
 .wrap{max-width:1120px;margin:0 auto;padding:0 28px}
+
+.skip-link{
+  position:absolute;top:-48px;left:24px;background:var(--accent);color:#fff;
+  padding:10px 16px;border-radius:0 0 8px 8px;font-weight:600;font-size:14px;
+  z-index:100;transition:top .15s ease;text-decoration:none;
+}
+.skip-link:focus{top:0;text-decoration:none;color:#fff}
 
 a{color:var(--accent-text);text-decoration:none;text-underline-offset:3px}
 a:hover{text-decoration:underline}
@@ -417,8 +536,8 @@ a:hover{text-decoration:underline}
 /* --- type --------------------------------------------------------- */
 h1,h2,h3,h4{line-height:1.18;letter-spacing:-.022em;margin:0}
 h1{font-size:clamp(32px,4.6vw,46px);font-weight:800;margin-bottom:14px;letter-spacing:-.03em}
-h2{font-size:clamp(22px,2.5vw,27px);font-weight:700;margin:60px 0 6px;letter-spacing:-.025em}
-h3{font-size:19px;font-weight:650;margin:38px 0 6px}
+h2{font-size:clamp(22px,2.5vw,27px);font-weight:700;margin:60px 0 6px;letter-spacing:-.025em;position:relative}
+h3{font-size:19px;font-weight:650;margin:38px 0 6px;position:relative}
 p{margin:0 0 18px}
 .lede{font-size:19px;line-height:1.65;color:var(--text-soft);max-width:62ch}
 main > .wrap > p,
@@ -430,19 +549,36 @@ main ul,main ol{padding-left:24px}
 main li{margin:.4em 0}
 main li::marker{color:var(--text-faint)}
 
+.heading-anchor{
+  margin-left:8px;color:var(--text-faint);text-decoration:none;
+  opacity:0;font-weight:normal;font-size:.82em;transition:opacity .15s ease,color .15s ease;
+}
+h2:hover .heading-anchor, h3:hover .heading-anchor, .heading-anchor:focus-visible{opacity:1}
+.heading-anchor:hover{color:var(--accent-text);text-decoration:none}
+
 code{
   font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
   font-size:.87em;background:var(--code-bg);border:1px solid var(--border);
   border-radius:6px;padding:.14em .42em;
-  /* Long tokens must be able to break on narrow screens; short ones like
-     :w or the shortcut glyphs contain no break opportunities anyway. */
   overflow-wrap:anywhere;
 }
 pre{
+  position:relative;
   background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
   padding:18px 20px;overflow-x:auto;margin:0 0 20px;box-shadow:var(--shadow);
 }
 pre code{background:none;border:0;padding:0;white-space:pre;font-size:13.5px;line-height:1.65}
+
+.code-copy-btn{
+  position:absolute;top:10px;right:10px;
+  background:var(--bg);border:1px solid var(--border);border-radius:6px;
+  color:var(--text-soft);padding:4px 9px;font-size:12px;font-weight:600;
+  cursor:pointer;opacity:0;transition:opacity .15s ease,background .15s ease,color .15s ease;
+  display:inline-flex;align-items:center;gap:5px;line-height:1;
+}
+pre:hover .code-copy-btn, .code-copy-btn:focus-visible{opacity:1}
+.code-copy-btn:hover{background:var(--surface-2);color:var(--text);border-color:var(--border-strong)}
+.code-copy-btn.copied{color:var(--accent-2);border-color:var(--accent-2);opacity:1}
 
 table{
   width:100%;border-collapse:separate;border-spacing:0;margin:6px 0 26px;
@@ -470,8 +606,12 @@ td.n{color:var(--text-faint);white-space:nowrap}
   background:color-mix(in srgb, var(--bg) 88%, transparent);
   border-bottom:1px solid var(--border);
   position:sticky;top:0;z-index:30;backdrop-filter:blur(12px) saturate(1.4);
+  transition:background-color .2s ease,border-color .2s ease;
 }
-.bar{display:flex;align-items:center;justify-content:space-between;gap:24px;height:66px}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:16px;height:66px}
+.bar-left{display:flex;align-items:center;gap:18px}
+.bar-right{display:flex;align-items:center;gap:8px}
+
 .brand{
   font-size:21px;font-weight:800;letter-spacing:-.035em;color:var(--text);
   display:inline-flex;align-items:center;gap:9px;
@@ -481,6 +621,42 @@ td.n{color:var(--text-faint);white-space:nowrap}
   background:linear-gradient(135deg,var(--accent),#21cee8);
 }
 .brand:hover{text-decoration:none}
+
+.search-btn{
+  display:inline-flex;align-items:center;gap:8px;padding:6px 12px;
+  background:var(--surface);border:1px solid var(--border);border-radius:8px;
+  color:var(--text-soft);font-size:13.5px;cursor:pointer;
+  transition:border-color .15s ease,background .15s ease,color .15s ease;
+}
+.search-btn:hover{background:var(--surface-2);border-color:var(--border-strong);color:var(--text)}
+.search-btn .kbd-hint{
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  font-size:11px;background:var(--bg);border:1px solid var(--border);
+  padding:1px 5px;border-radius:4px;color:var(--text-faint);
+}
+
+.theme-btn, .nav-toggle{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:36px;height:36px;padding:0;background:var(--surface);
+  border:1px solid var(--border);border-radius:8px;color:var(--text-soft);
+  cursor:pointer;transition:all .15s ease;
+}
+.theme-btn:hover, .nav-toggle:hover{
+  background:var(--surface-2);color:var(--text);border-color:var(--border-strong);
+}
+.nav-toggle{display:none}
+
+.sun-icon{display:none}
+.moon-icon{display:block}
+html[data-theme="dark"] .sun-icon{display:block}
+html[data-theme="dark"] .moon-icon{display:none}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .sun-icon{display:block}
+  :root:not([data-theme="light"]) .moon-icon{display:none}
+}
+html[data-theme="light"] .sun-icon{display:none}
+html[data-theme="light"] .moon-icon{display:block}
+
 .site nav{display:flex;align-items:center;gap:2px}
 .site nav a{
   padding:8px 13px;border-radius:8px;color:var(--text-soft);
@@ -504,8 +680,7 @@ td.n{color:var(--text-faint);white-space:nowrap}
 .has-sub .sub a:hover{background:var(--surface);color:var(--text)}
 
 /* --- hero --------------------------------------------------------- */
-.hero{position:relative;padding:88px 0 60px}
-.hero .wrap{position:relative}
+.hero{position:relative;padding:68px 0 44px}
 .logo{
   font-size:clamp(50px,9vw,78px);font-weight:800;letter-spacing:-.045em;margin:0;
   background:linear-gradient(180deg,var(--text),color-mix(in srgb,var(--text) 78%,var(--accent)));
@@ -580,8 +755,7 @@ footer.site{border-top:1px solid var(--border);background:var(--surface);positio
 .foot nav a{color:var(--text-soft);font-size:15.5px;padding:6px 10px;border-radius:8px}
 .foot nav a:hover{background:var(--bg);color:var(--text);text-decoration:none}
 
-
-/* --- two-column reading layout ------------------------------------ */
+/* --- reading layout & landing ------------------------------------- */
 .layout{display:grid;grid-template-columns:minmax(0,1fr) 236px;gap:56px;align-items:start}
 .layout > article{min-width:0}
 .aside{position:sticky;top:92px}
@@ -591,16 +765,19 @@ footer.site{border-top:1px solid var(--border);background:var(--surface);positio
   color:var(--text-faint);margin:0 0 12px;
 }
 .toc ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px}
-.toc a{color:var(--text-soft);font-size:14.5px;line-height:1.45;display:block}
-.toc a:hover{color:var(--accent-text);text-decoration:none}
+.toc a{
+  color:var(--text-soft);font-size:14.5px;line-height:1.45;display:block;
+  transition:color .15s ease,border-color .15s ease;
+  border-left:2px solid transparent;padding-left:10px;margin-left:-20px;
+}
+.toc a:hover{color:var(--text);text-decoration:none}
+.toc a.active{color:var(--accent-text);font-weight:650;border-left-color:var(--accent)}
+
 article > *{max-width:74ch}
 article > .cards,article > table,article > figure,article > .note,article > ul.tags{width:100%;max-width:none}
-article > .hero{
-  width:100%;max-width:none;
-  /* full-bleed: the wash then fades against the viewport edge, so it has no
-     visible inner boundary where the content column happens to end */
-  margin-left:calc(50% - 50vw);margin-right:calc(50% - 50vw);
-}
+article.landing > *{max-width:none}
+article.landing .grid{margin:20px 0 32px}
+
 figure.wide{margin:0 0 8px}
 figure.wide .shot{width:100%}
 
@@ -631,30 +808,357 @@ figure.wide .shot{width:100%}
 }
 .exgrid li span{display:block;font-family:inherit;font-size:13px;color:var(--text-soft);margin-top:3px}
 
+/* --- search modal ------------------------------------------------- */
+.search-modal[hidden]{display:none}
+.search-modal{position:fixed;inset:0;z-index:100;display:flex;align-items:flex-start;justify-content:center;padding:12vh 20px 20px}
+.search-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);animation:fadeIn .15s ease}
+.search-box{
+  position:relative;z-index:2;width:100%;max-width:580px;background:var(--bg);
+  border:1px solid var(--border-strong);border-radius:14px;box-shadow:var(--shadow-lg);
+  overflow:hidden;animation:popIn .18s cubic-bezier(.16,1,.3,1);display:flex;flex-direction:column;max-height:75vh;
+}
+.search-head{
+  display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--border);
+  color:var(--text-soft);
+}
+.search-input{
+  flex:1;background:transparent;border:0;outline:0;font-size:16px;color:var(--text);
+  font-family:inherit;
+}
+.search-input::placeholder{color:var(--text-faint)}
+.search-esc{
+  font-size:11px;padding:2px 6px;border-radius:4px;border:1px solid var(--border);
+  background:var(--surface);color:var(--text-faint);font-family:ui-monospace,Menlo,monospace;
+}
+.search-results{overflow-y:auto;padding:8px}
+.search-item{
+  display:flex;flex-direction:column;padding:10px 14px;border-radius:8px;
+  color:var(--text);text-decoration:none;transition:background .12s ease;
+}
+.search-item:hover, .search-item.selected{background:var(--surface);text-decoration:none}
+.search-item-title{font-size:14.5px;font-weight:600;display:flex;align-items:center;gap:8px}
+.search-item-badge{
+  font-size:11px;font-weight:600;text-transform:uppercase;color:var(--accent-text);
+  background:var(--accent-soft);padding:1px 6px;border-radius:4px;
+}
+.search-item-desc{font-size:13px;color:var(--text-soft);margin-top:2px;line-height:1.4}
+.search-empty{padding:28px 20px;text-align:center;color:var(--text-soft);font-size:14.5px}
+.search-foot{
+  display:flex;gap:16px;padding:10px 18px;background:var(--surface);border-top:1px solid var(--border);
+  font-size:12px;color:var(--text-faint);
+}
+.search-foot kbd{
+  font-family:ui-monospace,Menlo,monospace;font-size:11px;padding:1px 4px;background:var(--bg);
+  border:1px solid var(--border);border-radius:3px;margin:0 2px;
+}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes popIn{from{opacity:0;transform:scale(.96) translateY(-8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+
 @media(max-width:960px){
   .layout{grid-template-columns:minmax(0,1fr);gap:0}
-  .aside{position:static;margin:8px 0 0;order:-1}
+  .aside{position:static;margin:12px 0 24px;order:0}
   .toc{border-left:0;border:1px solid var(--border);border-radius:10px;padding:14px 18px;background:var(--surface)}
   .toc ol{flex-direction:row;flex-wrap:wrap;gap:6px 18px}
-  .toc a{font-size:14px}
+  .toc a{font-size:14px;border-left:0;padding-left:0;margin-left:0}
+  .toc a.active{border-left:0;color:var(--accent-text);text-decoration:underline}
 }
 
 @media(max-width:760px){
   .wrap{padding:0 20px}
-  .bar{height:auto;padding:14px 0;flex-wrap:wrap;gap:12px}
-  .site nav{gap:2px;flex-wrap:wrap;justify-content:flex-end}
-  .site nav a{padding:7px 10px;font-size:14.5px}
-  .site nav a.gh{margin-left:0}
-  .has-sub .sub{display:none}
+  .bar{height:62px;position:relative}
+  .nav-toggle{display:inline-flex}
+  .search-btn span, .search-btn .kbd-hint{display:none}
+  .search-btn{padding:8px}
+  .site nav{
+    display:none;position:absolute;top:100%;left:0;right:0;
+    background:var(--bg);border-bottom:1px solid var(--border);
+    padding:14px 20px 20px;flex-direction:column;align-items:stretch;gap:6px;
+    box-shadow:var(--shadow-lg);
+  }
+  .site.nav-open nav{display:flex}
+  .site nav a{padding:10px 14px;font-size:15.5px;border-radius:8px}
+  .site nav a.gh{margin-left:0;text-align:center;margin-top:8px}
+  .has-sub .sub{
+    display:flex;position:static;transform:none;box-shadow:none;
+    border:0;border-left:2px solid var(--border);border-radius:0;
+    margin:4px 0 6px 14px;padding:2px 0 2px 8px;flex-direction:column;gap:2px;
+  }
+  .has-sub .sub a{font-size:14px;padding:6px 10px}
   .hero{padding:56px 0 40px}
   h2{margin-top:46px}
   table{font-size:14.5px}
   th,td{padding:11px 13px}
 }
 @media print{
-  .site,footer.site{display:none}
+  .site,footer.site,.skip-link,.search-modal{display:none}
   body{background:#fff;color:#000}
 }
+"""
+
+JS = r"""
+(function() {
+  'use strict';
+
+  function initTheme() {
+    var toggleBtn = document.getElementById('theme-toggle');
+    if (!toggleBtn) return;
+
+    function getTheme() {
+      var saved = localStorage.getItem('cmx-theme');
+      if (saved === 'dark' || saved === 'light') return saved;
+      return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+
+    function setTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('cmx-theme', theme);
+      var metaTheme = document.querySelector('meta[name="theme-color"]');
+      if (metaTheme) metaTheme.setAttribute('content', theme === 'dark' ? '#0d1117' : '#ffffff');
+    }
+
+    toggleBtn.addEventListener('click', function() {
+      var current = getTheme();
+      var next = current === 'dark' ? 'light' : 'dark';
+      setTheme(next);
+    });
+
+    if (window.matchMedia) {
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+        if (!localStorage.getItem('cmx-theme')) {
+          setTheme(e.matches ? 'dark' : 'light');
+        }
+      });
+    }
+  }
+
+  function initCodeCopy() {
+    var blocks = document.querySelectorAll('pre');
+    blocks.forEach(function(pre) {
+      var code = pre.querySelector('code');
+      if (!code) return;
+
+      var btn = document.createElement('button');
+      btn.className = 'code-copy-btn';
+      btn.type = 'button';
+      btn.setAttribute('aria-label', 'Copy code snippet');
+      btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> <span>Copy</span>';
+
+      btn.addEventListener('click', function() {
+        var text = code.innerText.replace(/\n$/, '');
+        navigator.clipboard.writeText(text).then(function() {
+          btn.classList.add('copied');
+          btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> <span>Copied!</span>';
+          setTimeout(function() {
+            btn.classList.remove('copied');
+            btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> <span>Copy</span>';
+          }, 2000);
+        });
+      });
+
+      pre.appendChild(btn);
+    });
+  }
+
+  function initScrollSpy() {
+    var tocLinks = document.querySelectorAll('.toc a[href^="#"]');
+    if (!tocLinks.length) return;
+
+    var headings = [];
+    tocLinks.forEach(function(link) {
+      var id = link.getAttribute('href').slice(1);
+      var el = document.getElementById(id);
+      if (el) headings.push({ id: id, el: el, link: link });
+    });
+
+    if (!headings.length) return;
+
+    function onScroll() {
+      var top = window.scrollY + 100;
+      var active = headings[0];
+      for (var i = 0; i < headings.length; i++) {
+        if (headings[i].el.getBoundingClientRect().top + window.scrollY <= top) {
+          active = headings[i];
+        }
+      }
+      tocLinks.forEach(function(l) { l.classList.remove('active'); });
+      if (active) active.link.classList.add('active');
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  }
+
+  function initMobileNav() {
+    var navToggle = document.getElementById('nav-toggle');
+    var siteHeader = document.querySelector('header.site');
+    if (!navToggle || !siteHeader) return;
+
+    navToggle.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var open = siteHeader.classList.toggle('nav-open');
+      navToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+
+    document.addEventListener('click', function(e) {
+      if (!siteHeader.contains(e.target) && siteHeader.classList.contains('nav-open')) {
+        siteHeader.classList.remove('nav-open');
+        navToggle.setAttribute('aria-expanded', 'false');
+      }
+    });
+  }
+
+  function initSearch() {
+    var searchBtn = document.getElementById('search-btn');
+    var modal = document.getElementById('search-modal');
+    var input = document.getElementById('search-input');
+    var resultsBox = document.getElementById('search-results');
+    if (!modal || !input || !resultsBox) return;
+
+    var searchItems = [
+      { t: "Home", d: "A native-feeling code editor with Vim mode, search and live preview.", u: "/index.html", b: "Page" },
+      { t: "Features Overview", d: "CodeMirror 6 core, multiple cursors, fast mode, syntax highlight, themes.", u: "/features.html", b: "Features" },
+      { t: "Vim Mode", d: "Three levels: Off, Friendly, Expert. Ex command bar (:w, :q, :s, :noh).", u: "/features.html#vim-mode", b: "Vim" },
+      { t: "Workspace Search", d: "Ripgrep ignore walker, regex search, match context and file filter.", u: "/features.html#workspace-search", b: "Search" },
+      { t: "Live Preview", d: "Markdown, HTML and SVG live render with synced scroll and split view.", u: "/features.html#live-preview", b: "Preview" },
+      { t: "Quick Open & Palette", d: "Fuzzy file search on ⌘P / Ctrl+P, Command Palette on ⌘⇧P / Ctrl+Shift+P.", u: "/features.html#quick-open", b: "Navigation" },
+      { t: "Performance & Benchmarks", d: "~2.4s startup, ~95 MB RAM, 6.7 MB binary, methodology.", u: "/performance.html", b: "Performance" },
+      { t: "Downloads", d: "Download macOS DMG installer or build instructions for Linux and Windows.", u: "/downloads.html", b: "Download" },
+      { t: "Documentation Index", d: "Complete documentation: Installation, shortcuts, config, setup.", u: "/docs.html", b: "Docs" },
+      { t: "Installation — macOS", d: "Download DMG, drag to Applications, Gatekeeper quarantine fix.", u: "/docs/installation.html#macos", b: "Install" },
+      { t: "Installation — Linux", d: "Install WebKitGTK and build dependencies, Rust & Node setup.", u: "/docs/installation.html#linux", b: "Install" },
+      { t: "Installation — Windows", d: "WebView2 runtime, Rust and Node prerequisites, NSIS bundle.", u: "/docs/installation.html#windows", b: "Install" },
+      { t: "Keyboard Shortcuts", d: "Comprehensive keyboard reference for macOS, Linux and Windows.", u: "/docs/shortcuts.html", b: "Shortcuts" },
+      { t: "Configuration & Themes", d: "Fonts (JetBrains Mono, Fira Code), Dark/Light themes, Vim level.", u: "/docs/configuration.html", b: "Config" },
+      { t: "Troubleshooting", d: "Gatekeeper macOS, blank window, WebKitGTK Linux, WebView2 Windows.", u: "/docs/troubleshooting.html", b: "Help" },
+      { t: "Developer Setup", d: "Build from source, run cargo tests, pnpm dev, pnpm bench.", u: "/docs/development.html", b: "Dev" },
+      { t: "Contributing to CMX", d: "Roadmap, issue tracker, commit style, pull requests and code of conduct.", u: "/contributing.html", b: "Community" }
+    ];
+
+    var basePath = window.__CMX_BASE__ || '';
+    if (basePath) {
+      searchItems.forEach(function(item) {
+        if (item.u.startsWith('/')) item.u = basePath + item.u;
+      });
+    }
+
+    var selectedIndex = -1;
+
+    function openSearch() {
+      modal.hidden = false;
+      input.value = '';
+      selectedIndex = -1;
+      renderResults('');
+      setTimeout(function() { input.focus(); }, 30);
+    }
+
+    function closeSearch() {
+      modal.hidden = true;
+      if (searchBtn) searchBtn.focus();
+    }
+
+    function renderResults(q) {
+      var query = q.trim().toLowerCase();
+      var matched = searchItems.filter(function(item) {
+        if (!query) return true;
+        return item.t.toLowerCase().includes(query) ||
+               item.d.toLowerCase().includes(query) ||
+               item.b.toLowerCase().includes(query);
+      });
+
+      if (!matched.length) {
+        resultsBox.innerHTML = '<div class="search-empty">No results found for "' + escapeHtml(q) + '"</div>';
+        return;
+      }
+
+      var html = matched.map(function(item, idx) {
+        var cls = idx === selectedIndex ? 'search-item selected' : 'search-item';
+        return '<a class="' + cls + '" href="' + item.u + '" data-idx="' + idx + '">' +
+          '<div class="search-item-title">' +
+            '<span>' + escapeHtml(item.t) + '</span>' +
+            '<span class="search-item-badge">' + escapeHtml(item.b) + '</span>' +
+          '</div>' +
+          '<div class="search-item-desc">' + escapeHtml(item.d) + '</div>' +
+        '</a>';
+      }).join('');
+
+      resultsBox.innerHTML = html;
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    if (searchBtn) {
+      searchBtn.addEventListener('click', openSearch);
+    }
+
+    modal.querySelector('.search-backdrop').addEventListener('click', closeSearch);
+
+    input.addEventListener('input', function() {
+      selectedIndex = 0;
+      renderResults(input.value);
+    });
+
+    input.addEventListener('keydown', function(e) {
+      var items = resultsBox.querySelectorAll('.search-item');
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (items.length) {
+          selectedIndex = (selectedIndex + 1) % items.length;
+          updateSelected(items);
+        }
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (items.length) {
+          selectedIndex = (selectedIndex - 1 + items.length) % items.length;
+          updateSelected(items);
+        }
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (items.length && selectedIndex >= 0 && items[selectedIndex]) {
+          items[selectedIndex].click();
+        }
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        closeSearch();
+      }
+    });
+
+    function updateSelected(items) {
+      items.forEach(function(item, idx) {
+        item.classList.toggle('selected', idx === selectedIndex);
+        if (idx === selectedIndex) item.scrollIntoView({ block: 'nearest' });
+      });
+    }
+
+    document.addEventListener('keydown', function(e) {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        if (modal.hidden) openSearch();
+        else closeSearch();
+      } else if (e.key === '/' && modal.hidden && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+        e.preventDefault();
+        openSearch();
+      } else if (e.key === 'Escape' && !modal.hidden) {
+        closeSearch();
+      }
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+  function init() {
+    initTheme();
+    initCodeCopy();
+    initScrollSpy();
+    initMobileNav();
+    initSearch();
+  }
+})();
 """
 
 
@@ -665,18 +1169,16 @@ figure.wide .shot{width:100%}
 def p_hero():
     return f"""
 <section class="hero">
-  <div class="wrap">
-    <h1 class="logo">CMX</h1>
-    <div class="rule"><i></i><i></i></div>
-    <p class="tagline">{html.escape(TAGLINE)}</p>
-    <p class="sub">A <b>~7&nbsp;MB</b> binary, <b>~95&nbsp;MB</b> resident memory and a
-      <b>~2.4&nbsp;s</b> cold start — because CMX renders in the OS webview instead of bundling
-      a browser.</p>
-    <div class="cta">
-      <a class="btn btn-p" href="{LATEST_URL}" rel="noopener">Download for macOS</a>
-      <a class="btn btn-s" href="/downloads.html">All platforms</a>
-      <a class="btn btn-s" href="{REPO_URL}" rel="noopener">Source on GitHub</a>
-    </div>
+  <h1 class="logo">CMX</h1>
+  <div class="rule"><i></i><i></i></div>
+  <p class="tagline">{html.escape(TAGLINE)}</p>
+  <p class="sub">A <b>~7&nbsp;MB</b> binary, <b>~95&nbsp;MB</b> resident memory and a
+    <b>~2.4&nbsp;s</b> cold start — because CMX renders in the OS webview instead of bundling
+    a browser.</p>
+  <div class="cta">
+    <a class="btn btn-p" href="{LATEST_URL}" rel="noopener">Download for macOS</a>
+    <a class="btn btn-s" href="/downloads.html">All platforms</a>
+    <a class="btn btn-s" href="{REPO_URL}" rel="noopener">Source on GitHub</a>
   </div>
 </section>
 
@@ -1613,9 +2115,19 @@ BUILDERS = [
 
 
 def main() -> int:
+    global BASE_PATH
+    parser = argparse.ArgumentParser(description="Generate the CMX static website into docs/.")
+    parser.add_argument("--base", default=None, help="Override base path (e.g. '' for root or '/cmx')")
+    parser.add_argument("--serve", nargs="?", const=8000, type=int, default=None,
+                        help="Start a local preview server (default port: 8000)")
+    args, _ = parser.parse_known_args()
+    if args.base is not None:
+        BASE_PATH = args.base.rstrip("/")
+
     assets = OUT / "assets"
     assets.mkdir(parents=True, exist_ok=True)
     (assets / "site.css").write_text(CSS, encoding="utf-8")
+    (assets / "site.js").write_text(JS, encoding="utf-8")
 
     # Serve files verbatim; nothing here needs Jekyll's front-matter processing.
     (OUT / ".nojekyll").write_text("", encoding="utf-8")
@@ -1634,7 +2146,43 @@ def main() -> int:
     for path, slug in written:
         size = (OUT / slug).stat().st_size
         print(f"  {slug:<28} {size:>6,} bytes")
-    print(f"\n  sitemap.xml, robots.txt, .nojekyll, assets/site.css written to {OUT.relative_to(ROOT)}/")
+    print(f"\n  sitemap.xml, robots.txt, .nojekyll, assets/site.css, assets/site.js written to {OUT.relative_to(ROOT)}/")
+
+    if args.serve is not None:
+        import http.server
+        import socketserver
+        port = args.serve
+
+        class CmxPreviewHandler(http.server.SimpleHTTPRequestHandler):
+            def __init__(self, *a, **kw):
+                super().__init__(*a, directory=str(OUT), **kw)
+
+            def translate_path(self, path):
+                if path == "/":
+                    if BASE_PATH:
+                        self.send_response(302)
+                        self.send_header("Location", f"{BASE_PATH}/")
+                        self.end_headers()
+                        return ""
+                if BASE_PATH and path.startswith(f"{BASE_PATH}/"):
+                    path = "/" + path[len(BASE_PATH) + 1:]
+                elif BASE_PATH and path == BASE_PATH:
+                    self.send_response(302)
+                    self.send_header("Location", f"{BASE_PATH}/")
+                    self.end_headers()
+                    return ""
+                return super().translate_path(path)
+
+        url = f"http://localhost:{port}{BASE_PATH}/" if BASE_PATH else f"http://localhost:{port}/"
+        print(f"\n  Local preview running at {url}")
+        print("  Press Ctrl+C to stop.\n")
+        socketserver.TCPServer.allow_reuse_address = True
+        with socketserver.TCPServer(("", port), CmxPreviewHandler) as httpd:
+            try:
+                httpd.serve_forever()
+            except KeyboardInterrupt:
+                print("\n  Stopped preview server.")
+
     return 0
 
 

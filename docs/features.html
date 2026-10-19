@@ -7,7 +7,7 @@
 <meta name="description" content="Vim mode with three levels, .gitignore-aware workspace search, Quick Open, large-file fast mode, and live preview for Markdown, HTML and SVG.">
 <link rel="canonical" href="https://chaitmudunuri.github.io/cmx/features.html">
 <meta name="theme-color" content="#141416">
-<meta name="color-scheme" content="dark">
+<meta name="color-scheme" content="light dark">
 
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="CMX">
@@ -23,30 +23,57 @@
 <meta name="twitter:description" content="Vim mode with three levels, .gitignore-aware workspace search, Quick Open, large-file fast mode, and live preview for Markdown, HTML and SVG.">
 <meta name="twitter:image" content="https://chaitmudunuri.github.io/cmx/social-preview.png">
 
-<link rel="stylesheet" href="/assets/site.css">
+<script>
+(function(){
+  try{
+    var t=localStorage.getItem('cmx-theme');
+    if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);
+  }catch(e){}
+})();
+</script>
+<script>window.__CMX_BASE__ = "/cmx";</script>
+<link rel="stylesheet" href="/cmx/assets/site.css">
 <link rel="icon" href="https://raw.githubusercontent.com/chaitmudunuri/cmx/main/app-icon.svg" type="image/svg+xml">
+<script defer src="/cmx/assets/site.js"></script>
 
 <script type="application/ld+json" id="schema_0">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Features","item":"https://chaitmudunuri.github.io/cmx/features.html"}]}</script>
 <script type="application/ld+json" id="schema_1">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"CMX","alternateName":"CMX editor","description":"A native-feeling code editor with Vim mode, workspace search, and live preview. No Electron, no bundled browser.","url":"https://chaitmudunuri.github.io/cmx/","applicationCategory":"DeveloperApplication","applicationSubCategory":"Text editor","operatingSystem":"macOS, Linux, Windows","softwareVersion":"0.1.0","license":"https://github.com/chaitmudunuri/cmx/blob/main/LICENSE","downloadUrl":"https://github.com/chaitmudunuri/cmx/releases/download/v0.1.0/cmx.editor_0.1.0_aarch64.dmg","installUrl":"https://chaitmudunuri.github.io/cmx/docs/installation.html","softwareHelp":"https://chaitmudunuri.github.io/cmx/docs.html","releaseNotes":"https://github.com/chaitmudunuri/cmx/releases/tag/v0.1.0","image":"https://chaitmudunuri.github.io/cmx/social-preview.png","author":{"@type":"Person","name":"chaitmudunuri","url":"https://github.com/chaitmudunuri"},"maintainer":{"@type":"Person","name":"chaitmudunuri"},"offers":[{"@type":"Offer","price":"0","priceCurrency":"USD"}],"featureList":["Vim mode with Friendly and Expert levels","Workspace-wide search that respects .gitignore","Quick Open ranked file finder","Live preview for Markdown, HTML and SVG","Large-file fast mode","Dark and light themes"],"codeRepository":"https://github.com/chaitmudunuri/cmx","programmingLanguage":["Rust","TypeScript"]}</script>
 </head>
 <body>
+<a href="#main" class="skip-link">Skip to main content</a>
 <header class="site">
   <div class="wrap bar">
-    <a class="brand" href="/">CMX</a>
-    <nav aria-label="Main"><a href="/features.html" class="on">Features</a><a href="/performance.html">Performance</a><a href="/downloads.html">Download</a><div class="has-sub"><a href="/docs.html">Docs</a><div class="sub"><a href="/docs/installation.html">Installation</a><a href="/docs/shortcuts.html">Keyboard shortcuts</a><a href="/docs/configuration.html">Configuration</a><a href="/docs/troubleshooting.html">Troubleshooting</a><a href="/docs/development.html">Developer setup</a></div></div><a href="/contributing.html">Contributing</a><a class="gh" href="https://github.com/chaitmudunuri/cmx" rel="noopener">GitHub</a></nav>
+    <div class="bar-left">
+      <a class="brand" href="/cmx/">CMX</a>
+      <button id="search-btn" class="search-btn" type="button" aria-label="Search documentation" title="Search documentation (⌘K)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <span>Search</span>
+        <kbd class="kbd-hint">⌘K</kbd>
+      </button>
+    </div>
+    <div class="bar-right">
+      <nav id="site-nav" class="nav-menu" aria-label="Main"><a href="/cmx/features.html" class="on">Features</a><a href="/cmx/performance.html">Performance</a><a href="/cmx/downloads.html">Download</a><div class="has-sub"><a href="/cmx/docs.html">Docs</a><div class="sub"><a href="/cmx/docs/installation.html">Installation</a><a href="/cmx/docs/shortcuts.html">Keyboard shortcuts</a><a href="/cmx/docs/configuration.html">Configuration</a><a href="/cmx/docs/troubleshooting.html">Troubleshooting</a><a href="/cmx/docs/development.html">Developer setup</a></div></div><a href="/cmx/contributing.html">Contributing</a><a class="gh" href="https://github.com/chaitmudunuri/cmx" rel="noopener">GitHub</a></nav>
+      <button id="theme-toggle" class="theme-btn" type="button" aria-label="Toggle theme" title="Toggle theme">
+        <svg class="sun-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        <svg class="moon-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+      </button>
+      <button id="nav-toggle" class="nav-toggle" type="button" aria-label="Toggle navigation menu" aria-expanded="false">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+      </button>
+    </div>
   </div>
 </header>
 <main id="main">
   <div class="wrap">
-<ol class="crumbs"><li><a href="/features.html">Features</a></li></ol>
-<div class="layout"><article><h1>Features</h1>
+<ol class="crumbs"><li><a href="/cmx/features.html">Features</a></li></ol>
+<h1>Features</h1><div class="layout"><article>
 <p class="lede">Everything CMX does — and, at the end, what it deliberately leaves out.
-Figures are on the <a href="/performance.html">performance page</a>.</p>
+Figures are on the <a href="/cmx/performance.html">performance page</a>.</p>
 
-<h2 id="editing">Editing</h2>
+<h2 id="editing">Editing<a class="heading-anchor" href="#editing" aria-label="Link to section">#</a></h2>
 <div class="cards">
   <article class="card">
-    <h3>CodeMirror 6 core</h3>
+    <h3 id="codemirror-6-core">CodeMirror 6 core<a class="heading-anchor" href="#codemirror-6-core" aria-label="Link to section">#</a></h3>
     <p>The mature editing engine, not a reimplementation.</p>
     <ul class="mini">
       <li>Multiple cursors</li>
@@ -57,7 +84,7 @@ Figures are on the <a href="/performance.html">performance page</a>.</p>
     </ul>
   </article>
   <article class="card">
-    <h3>14 grammars, on demand</h3>
+    <h3 id="14-grammars-on-demand">14 grammars, on demand<a class="heading-anchor" href="#14-grammars-on-demand" aria-label="Link to section">#</a></h3>
     <p>Language packs load when a file needs them. Opening a Rust file never
     waits on the Python grammar.</p>
     <ul class="tags">
@@ -67,12 +94,12 @@ Figures are on the <a href="/performance.html">performance page</a>.</p>
     </ul>
   </article>
   <article class="card">
-    <h3>Markdown, properly</h3>
+    <h3 id="markdown-properly">Markdown, properly<a class="heading-anchor" href="#markdown-properly" aria-label="Link to section">#</a></h3>
     <p>Headings, emphasis, code, quotes, lists and links — with fenced code blocks
     syntax-highlighted rather than dumped as plain text.</p>
   </article>
   <article class="card">
-    <h3>Comfortable defaults</h3>
+    <h3 id="comfortable-defaults">Comfortable defaults<a class="heading-anchor" href="#comfortable-defaults" aria-label="Link to section">#</a></h3>
     <p>The small things you notice after an hour.</p>
     <ul class="mini">
       <li>Tab size 2, 4 or 8</li>
@@ -82,27 +109,27 @@ Figures are on the <a href="/performance.html">performance page</a>.</p>
     </ul>
   </article>
 </div>
-<p><a href="/docs/configuration.html">Configuration →</a></p>
+<p><a href="/cmx/docs/configuration.html">Configuration →</a></p>
 
-<h2 id="large-files">Large files</h2>
+<h2 id="large-files">Large files<a class="heading-anchor" href="#large-files" aria-label="Link to section">#</a></h2>
 <p>Files past <b>1.5&nbsp;MB</b> or <b>25,000 lines</b> drop into fast mode: parsing and
 decorative extras switch off so scrolling and editing stay smooth. A
 <span class="badge fast">FAST</span> badge in the status bar always tells you which mode
 you are in, so it is never a mystery.</p>
 
-<h2 id="vim-mode">Vim mode</h2>
+<h2 id="vim-mode">Vim mode<a class="heading-anchor" href="#vim-mode" aria-label="Link to section">#</a></h2>
 <p>Three levels, switched from the status-bar pill or the command palette.</p>
 <div class="cards">
   <article class="card">
-    <h3>Off <span class="badge">default</span></h3>
+    <h3 id="off-default">Off <span class="badge">default</span><a class="heading-anchor" href="#off-default" aria-label="Link to section">#</a></h3>
     <p>A plain editor. Nothing is intercepted.</p>
   </article>
   <article class="card">
-    <h3>Friendly</h3>
+    <h3 id="friendly">Friendly<a class="heading-anchor" href="#friendly" aria-label="Link to section">#</a></h3>
     <p>Hints plus a forgiving Ex command set.</p>
   </article>
   <article class="card">
-    <h3>Expert</h3>
+    <h3 id="expert">Expert<a class="heading-anchor" href="#expert" aria-label="Link to section">#</a></h3>
     <p>The full motion vocabulary.</p>
   </article>
 </div>
@@ -122,10 +149,10 @@ you are in, so it is never a mystery.</p>
 <span class="kbd">NORMAL</span> <span class="kbd">INSERT</span> or
 <span class="kbd">VISUAL</span>.</p>
 
-<h2 id="navigation">Navigation</h2>
+<h2 id="navigation">Navigation<a class="heading-anchor" href="#navigation" aria-label="Link to section">#</a></h2>
 <div class="cards">
   <article class="card">
-    <h3>File explorer</h3>
+    <h3 id="file-explorer">File explorer<a class="heading-anchor" href="#file-explorer" aria-label="Link to section">#</a></h3>
     <p>Create, rename and delete files and folders inline; reveal in Finder or
     Explorer; open and close a folder.</p>
     <ul class="mini">
@@ -134,7 +161,7 @@ you are in, so it is never a mystery.</p>
     </ul>
   </article>
   <article class="card">
-    <h3>Quick Open <span class="kbd">⌘P</span></h3>
+    <h3 id="quick-open-⌘p">Quick Open <span class="kbd">⌘P</span><a class="heading-anchor" href="#quick-open-⌘p" aria-label="Link to section">#</a></h3>
     <p>A ranked file finder over the open workspace, with filename hits ranked
     ahead of directory hits.</p>
     <ul class="mini">
@@ -143,7 +170,7 @@ you are in, so it is never a mystery.</p>
     </ul>
   </article>
   <article class="card">
-    <h3>Workspace search <span class="kbd">⌘⇧F</span></h3>
+    <h3 id="workspace-search-⌘⇧f">Workspace search <span class="kbd">⌘⇧F</span><a class="heading-anchor" href="#workspace-search-⌘⇧f" aria-label="Link to section">#</a></h3>
     <p>Every file in the workspace, grouped by file with two lines of context and
     the matched text highlighted.</p>
     <ul class="mini">
@@ -154,7 +181,7 @@ you are in, so it is never a mystery.</p>
     </ul>
   </article>
   <article class="card">
-    <h3>Tabs</h3>
+    <h3 id="tabs">Tabs<a class="heading-anchor" href="#tabs" aria-label="Link to section">#</a></h3>
     <p>Dirty-state dots, per-tab scroll and memory.</p>
     <ul class="mini">
       <li>Close one / right / others / all</li>
@@ -163,47 +190,47 @@ you are in, so it is never a mystery.</p>
   </article>
 </div>
 
-<h2 id="live-preview">Live preview</h2>
+<h2 id="live-preview">Live preview<a class="heading-anchor" href="#live-preview" aria-label="Link to section">#</a></h2>
 <p>Press <span class="kbd">⌘⇧V</span> to render the document beside the source,
 split by a resizer you can drag and reset with a double-click.</p>
 <div class="cards">
   <article class="card">
-    <h3>Markdown</h3>
+    <h3 id="markdown">Markdown<a class="heading-anchor" href="#markdown" aria-label="Link to section">#</a></h3>
     <p>Debounced, GitHub-flavored rendering.</p>
   </article>
   <article class="card">
-    <h3>HTML</h3>
+    <h3 id="html">HTML<a class="heading-anchor" href="#html" aria-label="Link to section">#</a></h3>
     <p>Rendered in a sandboxed <code>&lt;iframe&gt;</code>, so the document cannot reach
     the filesystem.</p>
   </article>
   <article class="card">
-    <h3>SVG</h3>
+    <h3 id="svg">SVG<a class="heading-anchor" href="#svg" aria-label="Link to section">#</a></h3>
     <p>Previewed in place.</p>
   </article>
 </div>
 
-<h2 id="status-bar">Status bar</h2>
+<h2 id="status-bar">Status bar<a class="heading-anchor" href="#status-bar" aria-label="Link to section">#</a></h2>
 <p>Vim mode pill, detected language, <code>Ln</code>/<code>Col</code> that jumps to Go to
 Line and reports the document's total line count, selection size, word-wrap state,
 encoding, and loading and fast-mode indicators.</p>
 
-<h2 id="not-doing">What CMX does not do</h2>
+<h2 id="not-doing">What CMX does not do<a class="heading-anchor" href="#not-doing" aria-label="Link to section">#</a></h2>
 <div class="cards">
   <article class="card">
-    <h3>No native-code plugins</h3>
+    <h3 id="no-native-code-plugins">No native-code plugins<a class="heading-anchor" href="#no-native-code-plugins" aria-label="Link to section">#</a></h3>
     <p>CMX renders in the OS webview. Plugins that run arbitrary native code
     would undercut the reason it ships no browser runtime.</p>
   </article>
   <article class="card">
-    <h3>No terminal multiplexer</h3>
+    <h3 id="no-terminal-multiplexer">No terminal multiplexer<a class="heading-anchor" href="#no-terminal-multiplexer" aria-label="Link to section">#</a></h3>
     <p>tmux and the terminal already do this better.</p>
   </article>
   <article class="card">
-    <h3>No cloud sync</h3>
+    <h3 id="no-cloud-sync">No cloud sync<a class="heading-anchor" href="#no-cloud-sync" aria-label="Link to section">#</a></h3>
     <p>Settings are a small file. Put it in your dotfiles repository.</p>
   </article>
 </div>
-<p>The <a href="/contributing.html#roadmap">roadmap</a> records what is being considered
+<p>The <a href="/cmx/contributing.html#roadmap">roadmap</a> records what is being considered
 and why.</p>
 </article><aside class="aside"><nav class="toc" aria-label="On this page"><p class="toc-title">On this page</p><ol><li><a href="#editing">Editing</a></li><li><a href="#large-files">Large files</a></li><li><a href="#vim-mode">Vim mode</a></li><li><a href="#navigation">Navigation</a></li><li><a href="#live-preview">Live preview</a></li><li><a href="#status-bar">Status bar</a></li><li><a href="#not-doing">What CMX does not do</a></li></ol></nav></aside></div>
   </div>
@@ -216,14 +243,30 @@ and why.</p>
       <a href="https://www.solidjs.com">Solid.js</a>, in Rust.
       The <a href="https://github.com/chaitmudunuri/cmx">GitHub repository</a> is the source of truth for the code.</p>
     <nav aria-label="Footer">
-      <a href="/features.html">Features</a>
-      <a href="/performance.html">Performance</a>
-      <a href="/downloads.html">Download</a>
-      <a href="/docs.html">Docs</a>
-      <a href="/contributing.html">Contributing</a>
+      <a href="/cmx/features.html">Features</a>
+      <a href="/cmx/performance.html">Performance</a>
+      <a href="/cmx/downloads.html">Download</a>
+      <a href="/cmx/docs.html">Docs</a>
+      <a href="/cmx/contributing.html">Contributing</a>
       <a href="https://github.com/chaitmudunuri/cmx">GitHub</a>
     </nav>
   </div>
 </footer>
+<div id="search-modal" class="search-modal" hidden>
+  <div class="search-backdrop"></div>
+  <div class="search-box" role="dialog" aria-modal="true" aria-label="Search documentation">
+    <div class="search-head">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <input id="search-input" class="search-input" type="search" placeholder="Search docs, features, shortcuts... (Esc to close)" autocomplete="off" spellcheck="false">
+      <kbd class="search-esc">ESC</kbd>
+    </div>
+    <div id="search-results" class="search-results"></div>
+    <div class="search-foot">
+      <span><kbd>↑</kbd><kbd>↓</kbd> navigate</span>
+      <span><kbd>↵</kbd> select</span>
+      <span><kbd>ESC</kbd> close</span>
+    </div>
+  </div>
+</div>
 </body>
 </html>

@@ -7,7 +7,7 @@
 <meta name="description" content="CMX is a code editor for macOS, Linux, Windows with Vim mode, workspace search and live preview. No Electron, no bundled browser, ~7 MB binary.">
 <link rel="canonical" href="https://chaitmudunuri.github.io/cmx/index.html">
 <meta name="theme-color" content="#141416">
-<meta name="color-scheme" content="dark">
+<meta name="color-scheme" content="light dark">
 
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="CMX">
@@ -23,85 +23,110 @@
 <meta name="twitter:description" content="CMX is a code editor for macOS, Linux, Windows with Vim mode, workspace search and live preview. No Electron, no bundled browser, ~7 MB binary.">
 <meta name="twitter:image" content="https://chaitmudunuri.github.io/cmx/social-preview.png">
 
-<link rel="stylesheet" href="/assets/site.css">
+<script>
+(function(){
+  try{
+    var t=localStorage.getItem('cmx-theme');
+    if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);
+  }catch(e){}
+})();
+</script>
+<script>window.__CMX_BASE__ = "/cmx";</script>
+<link rel="stylesheet" href="/cmx/assets/site.css">
 <link rel="icon" href="https://raw.githubusercontent.com/chaitmudunuri/cmx/main/app-icon.svg" type="image/svg+xml">
+<script defer src="/cmx/assets/site.js"></script>
 
 <script type="application/ld+json" id="schema_0">{"@context":"https://schema.org","@type":"SoftwareSourceCode","name":"CMX","description":"Source code for CMX, a code editor built with Tauri 2, CodeMirror 6 and Solid.js.","codeRepository":"https://github.com/chaitmudunuri/cmx","programmingLanguage":["Rust","TypeScript"],"license":"https://github.com/chaitmudunuri/cmx/blob/main/LICENSE","runtimePlatform":"macOS, Linux, Windows","author":{"@type":"Person","name":"chaitmudunuri","url":"https://github.com/chaitmudunuri"}}</script>
 <script type="application/ld+json" id="schema_1">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"CMX","alternateName":"CMX editor","description":"A native-feeling code editor with Vim mode, workspace search, and live preview. No Electron, no bundled browser.","url":"https://chaitmudunuri.github.io/cmx/","applicationCategory":"DeveloperApplication","applicationSubCategory":"Text editor","operatingSystem":"macOS, Linux, Windows","softwareVersion":"0.1.0","license":"https://github.com/chaitmudunuri/cmx/blob/main/LICENSE","downloadUrl":"https://github.com/chaitmudunuri/cmx/releases/download/v0.1.0/cmx.editor_0.1.0_aarch64.dmg","installUrl":"https://chaitmudunuri.github.io/cmx/docs/installation.html","softwareHelp":"https://chaitmudunuri.github.io/cmx/docs.html","releaseNotes":"https://github.com/chaitmudunuri/cmx/releases/tag/v0.1.0","image":"https://chaitmudunuri.github.io/cmx/social-preview.png","author":{"@type":"Person","name":"chaitmudunuri","url":"https://github.com/chaitmudunuri"},"maintainer":{"@type":"Person","name":"chaitmudunuri"},"offers":[{"@type":"Offer","price":"0","priceCurrency":"USD"}],"featureList":["Vim mode with Friendly and Expert levels","Workspace-wide search that respects .gitignore","Quick Open ranked file finder","Live preview for Markdown, HTML and SVG","Large-file fast mode","Dark and light themes"],"codeRepository":"https://github.com/chaitmudunuri/cmx","programmingLanguage":["Rust","TypeScript"]}</script>
 </head>
 <body>
+<a href="#main" class="skip-link">Skip to main content</a>
 <header class="site">
   <div class="wrap bar">
-    <a class="brand" href="/">CMX</a>
-    <nav aria-label="Main"><a href="/features.html">Features</a><a href="/performance.html">Performance</a><a href="/downloads.html">Download</a><div class="has-sub"><a href="/docs.html">Docs</a><div class="sub"><a href="/docs/installation.html">Installation</a><a href="/docs/shortcuts.html">Keyboard shortcuts</a><a href="/docs/configuration.html">Configuration</a><a href="/docs/troubleshooting.html">Troubleshooting</a><a href="/docs/development.html">Developer setup</a></div></div><a href="/contributing.html">Contributing</a><a class="gh" href="https://github.com/chaitmudunuri/cmx" rel="noopener">GitHub</a></nav>
+    <div class="bar-left">
+      <a class="brand" href="/cmx/">CMX</a>
+      <button id="search-btn" class="search-btn" type="button" aria-label="Search documentation" title="Search documentation (⌘K)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <span>Search</span>
+        <kbd class="kbd-hint">⌘K</kbd>
+      </button>
+    </div>
+    <div class="bar-right">
+      <nav id="site-nav" class="nav-menu" aria-label="Main"><a href="/cmx/features.html">Features</a><a href="/cmx/performance.html">Performance</a><a href="/cmx/downloads.html">Download</a><div class="has-sub"><a href="/cmx/docs.html">Docs</a><div class="sub"><a href="/cmx/docs/installation.html">Installation</a><a href="/cmx/docs/shortcuts.html">Keyboard shortcuts</a><a href="/cmx/docs/configuration.html">Configuration</a><a href="/cmx/docs/troubleshooting.html">Troubleshooting</a><a href="/cmx/docs/development.html">Developer setup</a></div></div><a href="/cmx/contributing.html">Contributing</a><a class="gh" href="https://github.com/chaitmudunuri/cmx" rel="noopener">GitHub</a></nav>
+      <button id="theme-toggle" class="theme-btn" type="button" aria-label="Toggle theme" title="Toggle theme">
+        <svg class="sun-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        <svg class="moon-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+      </button>
+      <button id="nav-toggle" class="nav-toggle" type="button" aria-label="Toggle navigation menu" aria-expanded="false">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+      </button>
+    </div>
   </div>
 </header>
 <main id="main">
   <div class="wrap">
 
-<div class="layout"><article>
+<article class="landing">
 <section class="hero">
-  <div class="wrap">
-    <h1 class="logo">CMX</h1>
-    <div class="rule"><i></i><i></i></div>
-    <p class="tagline">A native-feeling code editor with Vim mode, workspace search, and live preview. No Electron, no bundled browser.</p>
-    <p class="sub">A <b>~7&nbsp;MB</b> binary, <b>~95&nbsp;MB</b> resident memory and a
-      <b>~2.4&nbsp;s</b> cold start — because CMX renders in the OS webview instead of bundling
-      a browser.</p>
-    <div class="cta">
-      <a class="btn btn-p" href="https://github.com/chaitmudunuri/cmx/releases/latest" rel="noopener">Download for macOS</a>
-      <a class="btn btn-s" href="/downloads.html">All platforms</a>
-      <a class="btn btn-s" href="https://github.com/chaitmudunuri/cmx" rel="noopener">Source on GitHub</a>
-    </div>
+  <h1 class="logo">CMX</h1>
+  <div class="rule"><i></i><i></i></div>
+  <p class="tagline">A native-feeling code editor with Vim mode, workspace search, and live preview. No Electron, no bundled browser.</p>
+  <p class="sub">A <b>~7&nbsp;MB</b> binary, <b>~95&nbsp;MB</b> resident memory and a
+    <b>~2.4&nbsp;s</b> cold start — because CMX renders in the OS webview instead of bundling
+    a browser.</p>
+  <div class="cta">
+    <a class="btn btn-p" href="https://github.com/chaitmudunuri/cmx/releases/latest" rel="noopener">Download for macOS</a>
+    <a class="btn btn-s" href="/cmx/downloads.html">All platforms</a>
+    <a class="btn btn-s" href="https://github.com/chaitmudunuri/cmx" rel="noopener">Source on GitHub</a>
   </div>
 </section>
 
 <figure class="wide"><a href="https://github.com/chaitmudunuri/cmx"><img class="shot"
-  src="/screenshots/01-workspace-dark.png" width="1380" height="723" loading="lazy"
+  src="/cmx/screenshots/01-workspace-dark.png" width="1380" height="723" loading="lazy"
   alt="CMX code editor showing a dark-theme workspace with the file explorer open and syntax-highlighted TypeScript."></a></figure>
 
-<h2 id="why-cmx">Why CMX</h2>
+<h2 id="why-cmx">Why CMX<a class="heading-anchor" href="#why-cmx" aria-label="Link to section">#</a></h2>
 <p>Most editors make you choose between native feel and speed. Electron apps feel
 native but ship a browser runtime; web editors are fast but live in a tab. CMX uses
 the operating system's own webview, so it gets both without owning a browser.</p>
 <div class="grid">
-  <div class="card"><h3>No bundled browser</h3><p>WebKit on macOS, WebKitGTK on Linux, WebView2 on
+  <div class="card"><h3 id="no-bundled-browser">No bundled browser<a class="heading-anchor" href="#no-bundled-browser" aria-label="Link to section">#</a></h3><p>WebKit on macOS, WebKitGTK on Linux, WebView2 on
     Windows. Nothing extra to download, patch or ship.</p></div>
-  <div class="card"><h3>Vim mode, three levels</h3><p>Off by default. Friendly adds hints and a
+  <div class="card"><h3 id="vim-mode-three-levels">Vim mode, three levels<a class="heading-anchor" href="#vim-mode-three-levels" aria-label="Link to section">#</a></h3><p>Off by default. Friendly adds hints and a
     forgiving Ex set; Expert gives the full motion vocabulary.</p></div>
-  <div class="card"><h3>Workspace search</h3><p>Ripgrep's <code>ignore</code> walker, built in.
+  <div class="card"><h3 id="workspace-search">Workspace search<a class="heading-anchor" href="#workspace-search" aria-label="Link to section">#</a></h3><p>Ripgrep's <code>ignore</code> walker, built in.
     Respects <code>.gitignore</code> with nothing to install.</p></div>
-  <div class="card"><h3>Live preview</h3><p>Markdown, HTML and SVG rendered beside the source,
+  <div class="card"><h3 id="live-preview">Live preview<a class="heading-anchor" href="#live-preview" aria-label="Link to section">#</a></h3><p>Markdown, HTML and SVG rendered beside the source,
     split by a draggable resizer.</p></div>
-  <div class="card"><h3>Quick Open</h3><p>A ranked file finder on <code>⌘P</code> and the command
+  <div class="card"><h3 id="quick-open">Quick Open<a class="heading-anchor" href="#quick-open" aria-label="Link to section">#</a></h3><p>A ranked file finder on <code>⌘P</code> and the command
     palette on <code>⌘⇧P</code>.</p></div>
-  <div class="card"><h3>Large-file fast mode</h3><p>Files past 1.5&nbsp;MB or 25,000 lines drop to
+  <div class="card"><h3 id="large-file-fast-mode">Large-file fast mode<a class="heading-anchor" href="#large-file-fast-mode" aria-label="Link to section">#</a></h3><p>Files past 1.5&nbsp;MB or 25,000 lines drop to
     fast mode automatically, with a badge so you know.</p></div>
 </div>
 
-<h2 id="see-it-in-action">See it in action</h2>
+<h2 id="see-it-in-action">See it in action<a class="heading-anchor" href="#see-it-in-action" aria-label="Link to section">#</a></h2>
 <div class="grid">
   <div class="card"><figure>
-    <img class="shot" src="/screenshots/03-quick-open.png" width="1380" height="723" loading="lazy"
+    <img class="shot" src="/cmx/screenshots/03-quick-open.png" width="1380" height="723" loading="lazy"
       alt="CMX code editor showing the command palette and quick file search.">
     <figcaption><b>Quick Open</b> ranks files as you type. The command palette is on
       <code>⌘⇧P</code>.</figcaption>
   </figure></div>
   <div class="card"><figure>
-    <img class="shot" src="/screenshots/04-search-preview.png" width="1380" height="723" loading="lazy"
+    <img class="shot" src="/cmx/screenshots/04-search-preview.png" width="1380" height="723" loading="lazy"
       alt="CMX code editor showing workspace search results beside a rendered Markdown live preview.">
     <figcaption><b>Workspace search</b> groups matches with context. <b>Live preview</b> renders
       the document beside it.</figcaption>
   </figure></div>
 </div>
-<p><a href="/features.html">Read about every feature →</a></p>
+<p><a href="/cmx/features.html">Read about every feature →</a></p>
 
-<h2 id="get-cmx">Get CMX</h2>
+<h2 id="get-cmx">Get CMX<a class="heading-anchor" href="#get-cmx" aria-label="Link to section">#</a></h2>
 <p>Prebuilt binaries exist for macOS on Apple Silicon today. Linux and Windows build
 cleanly from source, and packaged installers for all three platforms are the next
 release milestone.</p>
-<p><a class="btn btn-p" href="/downloads.html">Installation instructions for all platforms</a></p>
-</article><aside class="aside"><nav class="toc" aria-label="On this page"><p class="toc-title">On this page</p><ol><li><a href="#why-cmx">Why CMX</a></li><li><a href="#see-it-in-action">See it in action</a></li><li><a href="#get-cmx">Get CMX</a></li></ol></nav></aside></div>
+<p><a class="btn btn-p" href="/cmx/downloads.html">Installation instructions for all platforms</a></p>
+</article>
   </div>
 </main>
 <footer class="site">
@@ -112,14 +137,30 @@ release milestone.</p>
       <a href="https://www.solidjs.com">Solid.js</a>, in Rust.
       The <a href="https://github.com/chaitmudunuri/cmx">GitHub repository</a> is the source of truth for the code.</p>
     <nav aria-label="Footer">
-      <a href="/features.html">Features</a>
-      <a href="/performance.html">Performance</a>
-      <a href="/downloads.html">Download</a>
-      <a href="/docs.html">Docs</a>
-      <a href="/contributing.html">Contributing</a>
+      <a href="/cmx/features.html">Features</a>
+      <a href="/cmx/performance.html">Performance</a>
+      <a href="/cmx/downloads.html">Download</a>
+      <a href="/cmx/docs.html">Docs</a>
+      <a href="/cmx/contributing.html">Contributing</a>
       <a href="https://github.com/chaitmudunuri/cmx">GitHub</a>
     </nav>
   </div>
 </footer>
+<div id="search-modal" class="search-modal" hidden>
+  <div class="search-backdrop"></div>
+  <div class="search-box" role="dialog" aria-modal="true" aria-label="Search documentation">
+    <div class="search-head">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <input id="search-input" class="search-input" type="search" placeholder="Search docs, features, shortcuts... (Esc to close)" autocomplete="off" spellcheck="false">
+      <kbd class="search-esc">ESC</kbd>
+    </div>
+    <div id="search-results" class="search-results"></div>
+    <div class="search-foot">
+      <span><kbd>↑</kbd><kbd>↓</kbd> navigate</span>
+      <span><kbd>↵</kbd> select</span>
+      <span><kbd>ESC</kbd> close</span>
+    </div>
+  </div>
+</div>
 </body>
 </html>
