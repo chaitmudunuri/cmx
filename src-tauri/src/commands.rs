@@ -5,8 +5,14 @@ use std::collections::VecDeque;
 use std::fs;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Read};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
+
+#[derive(Debug, Serialize, Clone)]
+pub struct TargetPathInfo {
+    pub path: String,
+    pub is_dir: bool,
+}
 
 #[derive(Debug, Serialize)]
 pub struct FileEntry {
@@ -109,12 +115,28 @@ fn looks_binary(path: &Path) -> bool {
     buf[..n].contains(&0)
 }
 
+/// Canonicalize or normalize a path, properly handling file:// URLs and percent-encoding.
+pub fn resolve_path(raw: &str) -> PathBuf {
+    let trimmed = raw.trim();
+    if trimmed.starts_with("file://") {
+        if let Ok(parsed_url) = url::Url::parse(trimmed) {
+            if let Ok(file_path) = parsed_url.to_file_path() {
+                return file_path;
+            }
+        }
+        let stripped = trimmed.trim_start_matches("file://");
+        return PathBuf::from(stripped);
+    }
+    PathBuf::from(trimmed)
+}
+
 /// Read a file's contents as a UTF-8 string
 #[tauri::command]
 pub async fn read_file(path: String) -> Result<String, String> {
     tauri::async_runtime::spawn_blocking(move || {
-        let metadata = fs::metadata(&path)
-            .map_err(|e| format!("Failed to read metadata for {}: {}", path, e))?;
+        let p = resolve_path(&path);
+        let metadata = fs::metadata(&p)
+            .map_err(|e| format!("Failed to read metadata for {}: {}", p.display(), e))?;
 
         if metadata.len() > MAX_FILE_SIZE_BYTES {
             return Err(format!(
@@ -123,8 +145,8 @@ pub async fn read_file(path: String) -> Result<String, String> {
             ));
         }
 
-        let bytes = fs::read(&path)
-            .map_err(|e| format!("Failed to read {}: {}", path, e))?;
+        let bytes = fs::read(&p)
+            .map_err(|e| format!("Failed to read {}: {}", p.display(), e))?;
 
         match String::from_utf8(bytes) {
             Ok(s) => Ok(s),
@@ -166,7 +188,7 @@ fn base64_encode(data: &[u8]) -> String {
 #[tauri::command]
 pub async fn read_image_data(path: String) -> Result<String, String> {
     tauri::async_runtime::spawn_blocking(move || {
-        let p = Path::new(&path);
+        let p = resolve_path(&path);
         let ext = p
             .extension()
             .and_then(|e| e.to_str())
@@ -181,9 +203,10 @@ pub async fn read_image_data(path: String) -> Result<String, String> {
             "ico" => "image/x-icon",
             "bmp" => "image/bmp",
             "avif" => "image/avif",
+            "tiff" | "tif" => "image/tiff",
             _ => "application/octet-stream",
         };
-        let bytes = fs::read(&path).map_err(|e| format!("Failed to read image {}: {}", path, e))?;
+        let bytes = fs::read(&p).map_err(|e| format!("Failed to read image {}: {}", p.display(), e))?;
         let encoded = base64_encode(&bytes);
         Ok(format!("data:{};base64,{}", mime, encoded))
     })
@@ -195,11 +218,11 @@ pub async fn read_image_data(path: String) -> Result<String, String> {
 #[tauri::command]
 pub async fn write_file(path: String, content: String) -> Result<(), String> {
     tauri::async_runtime::spawn_blocking(move || {
-        let p = Path::new(&path);
+        let p = resolve_path(&path);
         if let Some(parent) = p.parent() {
             let _ = fs::create_dir_all(parent);
         }
-        fs::write(&path, &content).map_err(|e| format!("Failed to write {}: {}", path, e))
+        fs::write(&p, &content).map_err(|e| format!("Failed to write {}: {}", p.display(), e))
     })
     .await
     .map_err(|e| format!("Task execution failed: {}", e))?
@@ -208,12 +231,12 @@ pub async fn write_file(path: String, content: String) -> Result<(), String> {
 /// Create a new empty file
 #[tauri::command]
 pub async fn create_file(path: String) -> Result<(), String> {
-    let p = Path::new(&path);
+    let p = resolve_path(&path);
     if let Some(parent) = p.parent() {
         fs::create_dir_all(parent).map_err(|e| format!("Failed to create parent dirs: {}", e))?;
     }
     if !p.exists() {
-        fs::write(p, "").map_err(|e| format!("Failed to create file: {}", e))?;
+        fs::write(&p, "").map_err(|e| format!("Failed to create file: {}", e))?;
     }
     Ok(())
 }
@@ -221,34 +244,38 @@ pub async fn create_file(path: String) -> Result<(), String> {
 /// Create a new directory
 #[tauri::command]
 pub async fn create_dir(path: String) -> Result<(), String> {
-    fs::create_dir_all(&path).map_err(|e| format!("Failed to create directory: {}", e))
+    let p = resolve_path(&path);
+    fs::create_dir_all(&p).map_err(|e| format!("Failed to create directory: {}", e))
 }
 
 /// Rename or move a file or folder
 #[tauri::command]
 pub async fn rename_path(old_path: String, new_path: String) -> Result<(), String> {
-    fs::rename(&old_path, &new_path).map_err(|e| format!("Failed to rename: {}", e))
+    let old_p = resolve_path(&old_path);
+    let new_p = resolve_path(&new_path);
+    fs::rename(&old_p, &new_p).map_err(|e| format!("Failed to rename: {}", e))
 }
 
 /// Delete a file or directory
 #[tauri::command]
 pub async fn delete_path(path: String) -> Result<(), String> {
-    let p = Path::new(&path);
+    let p = resolve_path(&path);
     if p.is_dir() {
-        fs::remove_dir_all(p).map_err(|e| format!("Failed to delete folder: {}", e))
+        fs::remove_dir_all(&p).map_err(|e| format!("Failed to delete folder: {}", e))
     } else {
-        fs::remove_file(p).map_err(|e| format!("Failed to delete file: {}", e))
+        fs::remove_file(&p).map_err(|e| format!("Failed to delete file: {}", e))
     }
 }
 
 /// Reveal in OS file manager (Finder / Explorer / File Manager)
 #[tauri::command]
 pub async fn reveal_in_file_manager(path: String) -> Result<(), String> {
+    let p = resolve_path(&path);
     #[cfg(target_os = "macos")]
     {
         std::process::Command::new("open")
             .arg("-R")
-            .arg(&path)
+            .arg(&p)
             .spawn()
             .map_err(|e| format!("Failed to reveal in Finder: {}", e))?;
     }
@@ -256,15 +283,14 @@ pub async fn reveal_in_file_manager(path: String) -> Result<(), String> {
     #[cfg(target_os = "windows")]
     {
         std::process::Command::new("explorer")
-            .arg(format!("/select,{}", path))
+            .arg(format!("/select,{}", p.display()))
             .spawn()
             .map_err(|e| format!("Failed to reveal in Explorer: {}", e))?;
     }
 
     #[cfg(all(not(target_os = "macos"), not(target_os = "windows")))]
     {
-        let p = Path::new(&path);
-        let dir = if p.is_dir() { p } else { p.parent().unwrap_or(p) };
+        let dir = if p.is_dir() { &p } else { p.parent().unwrap_or(&p) };
         std::process::Command::new("xdg-open")
             .arg(dir)
             .spawn()
@@ -278,7 +304,7 @@ pub async fn reveal_in_file_manager(path: String) -> Result<(), String> {
 #[tauri::command]
 pub async fn get_git_status(root_path: String) -> Result<GitStatusResult, String> {
     tauri::async_runtime::spawn_blocking(move || {
-        let root = Path::new(&root_path);
+        let root = resolve_path(&root_path);
         if !root.exists() {
             return Ok(GitStatusResult {
                 is_repo: false,
@@ -290,7 +316,7 @@ pub async fn get_git_status(root_path: String) -> Result<GitStatusResult, String
         // Check if root is inside a git work tree
         let inside_output = std::process::Command::new("git")
             .arg("-C")
-            .arg(&root_path)
+            .arg(&root)
             .arg("rev-parse")
             .arg("--is-inside-work-tree")
             .output();
@@ -313,7 +339,7 @@ pub async fn get_git_status(root_path: String) -> Result<GitStatusResult, String
         // Query branch
         let branch = std::process::Command::new("git")
             .arg("-C")
-            .arg(&root_path)
+            .arg(&root)
             .arg("branch")
             .arg("--show-current")
             .output()
@@ -330,7 +356,7 @@ pub async fn get_git_status(root_path: String) -> Result<GitStatusResult, String
             .or_else(|| {
                 std::process::Command::new("git")
                     .arg("-C")
-                    .arg(&root_path)
+                    .arg(&root)
                     .arg("rev-parse")
                     .arg("--abbrev-ref")
                     .arg("HEAD")
@@ -350,7 +376,7 @@ pub async fn get_git_status(root_path: String) -> Result<GitStatusResult, String
         // Query status via porcelain
         let status_output = std::process::Command::new("git")
             .arg("-C")
-            .arg(&root_path)
+            .arg(&root)
             .arg("status")
             .arg("--porcelain=v1")
             .arg("-uall")
@@ -414,14 +440,14 @@ pub async fn get_git_status(root_path: String) -> Result<GitStatusResult, String
 /// List the entries in a directory, returning them sorted (directories first, then alphabetical)
 #[tauri::command]
 pub async fn list_dir(path: String) -> Result<Vec<FileEntry>, String> {
-    let dir_path = Path::new(&path);
+    let dir_path = resolve_path(&path);
     if !dir_path.is_dir() {
-        return Err(format!("{} is not a directory", path));
+        return Err(format!("{} is not a directory", dir_path.display()));
     }
 
     let mut entries = Vec::new();
     let read_dir =
-        fs::read_dir(dir_path).map_err(|e| format!("Failed to read dir {}: {}", path, e))?;
+        fs::read_dir(&dir_path).map_err(|e| format!("Failed to read dir {}: {}", dir_path.display(), e))?;
 
     for entry in read_dir {
         let Ok(entry) = entry else {
@@ -478,6 +504,48 @@ pub async fn list_dir(path: String) -> Result<Vec<FileEntry>, String> {
     Ok(entries)
 }
 
+/// Native OS folder picker dialog via rfd (works reliably on macOS without plugin sandbox/permissions friction)
+#[tauri::command]
+pub async fn pick_folder(default_path: Option<String>) -> Result<Option<String>, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        let mut dialog = rfd::FileDialog::new().set_title("Open Folder");
+        if let Some(def) = default_path {
+            let p = resolve_path(&def);
+            if p.exists() {
+                dialog = dialog.set_directory(&p);
+            }
+        }
+        let picked = dialog.pick_folder();
+        Ok(picked.map(|p| p.to_string_lossy().to_string()))
+    })
+    .await
+    .map_err(|e| format!("Dialog execution failed: {}", e))?
+}
+
+/// Native OS file picker dialog via rfd
+#[tauri::command]
+pub async fn pick_file(default_path: Option<String>) -> Result<Option<String>, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        let mut dialog = rfd::FileDialog::new().set_title("Open File");
+        if let Some(def) = default_path {
+            let p = resolve_path(&def);
+            if p.exists() {
+                if p.is_file() {
+                    if let Some(parent) = p.parent() {
+                        dialog = dialog.set_directory(parent);
+                    }
+                } else {
+                    dialog = dialog.set_directory(&p);
+                }
+            }
+        }
+        let picked = dialog.pick_file();
+        Ok(picked.map(|p| p.to_string_lossy().to_string()))
+    })
+    .await
+    .map_err(|e| format!("Dialog execution failed: {}", e))?
+}
+
 /// Telescope-style file finder (find files by name / path respecting .gitignore).
 /// Ranked (filename hit > path hit, earlier + shorter wins), capped, and
 /// cooperatively cancellable: a newer call aborts an in-flight walk.
@@ -489,7 +557,7 @@ pub async fn find_files(
 ) -> Result<Vec<FileSearchResult>, String> {
     let my_gen = FIND_GEN.fetch_add(1, Ordering::SeqCst) + 1;
     let max_results = limit.unwrap_or(100);
-    let root_path = Path::new(&root);
+    let root_path = resolve_path(&root);
     if !root_path.exists() {
         return Ok(Vec::new());
     }
@@ -500,7 +568,7 @@ pub async fn find_files(
     // Empty query: first N files in walk order (cheap, bounded).
     if query_terms.is_empty() {
         let mut results = Vec::new();
-        let walker = WalkBuilder::new(root_path)
+        let walker = WalkBuilder::new(&root_path)
             .hidden(true)
             .git_ignore(true)
             .git_global(true)
@@ -516,7 +584,7 @@ pub async fn find_files(
                         path: entry.path().to_string_lossy().to_string(),
                         rel_path: entry
                             .path()
-                            .strip_prefix(root_path)
+                            .strip_prefix(&root_path)
                             .unwrap_or(entry.path())
                             .to_string_lossy()
                             .to_string(),
@@ -535,7 +603,7 @@ pub async fn find_files(
     // Full walk is bounded by cancellation: typing another key aborts this one.
     const COLLECT_CAP: usize = 2000;
     let mut scored: Vec<(i64, FileSearchResult)> = Vec::new();
-    let walker = WalkBuilder::new(root_path)
+    let walker = WalkBuilder::new(&root_path)
         .hidden(true)
         .git_ignore(true)
         .git_global(true)
@@ -552,7 +620,7 @@ pub async fn find_files(
         }
         let rel_path = entry
             .path()
-            .strip_prefix(root_path)
+            .strip_prefix(&root_path)
             .unwrap_or(entry.path())
             .to_string_lossy()
             .to_string();
@@ -619,7 +687,7 @@ pub async fn live_grep(
     }
 
     let max_results = limit.unwrap_or(100);
-    let root_path = Path::new(&root);
+    let root_path = resolve_path(&root);
     if !root_path.exists() {
         return Ok(Vec::new());
     }
@@ -631,7 +699,7 @@ pub async fn live_grep(
         .map_err(|e| e.to_string())?;
 
     let mut matches = Vec::new();
-    let walker = WalkBuilder::new(root_path)
+    let walker = WalkBuilder::new(&root_path)
         .hidden(true)
         .git_ignore(true)
         .git_global(true)
@@ -682,7 +750,7 @@ pub async fn live_grep(
 
         let full_path = path.to_string_lossy().to_string();
         let rel_path = path
-            .strip_prefix(root_path)
+            .strip_prefix(&root_path)
             .unwrap_or(path)
             .to_string_lossy()
             .to_string();
@@ -735,8 +803,9 @@ pub async fn get_preview(
     radius: Option<usize>,
 ) -> Result<PreviewResult, String> {
     let r = radius.unwrap_or(25);
+    let p = resolve_path(&path);
 
-    let file = File::open(&path).map_err(|e| format!("Failed to open {}: {}", path, e))?;
+    let file = File::open(&p).map_err(|e| format!("Failed to open {}: {}", p.display(), e))?;
     let mut total_lines = 0usize;
     for line in BufReader::new(file).lines() {
         line.map_err(|_| "Binary or non-UTF8 file".to_string())?;
@@ -756,7 +825,7 @@ pub async fn get_preview(
     let start_line = center.saturating_sub(r + 1) + 1;
     let end_line = (center + r).min(total_lines);
 
-    let file2 = File::open(&path).map_err(|e| format!("Failed to open {}: {}", path, e))?;
+    let file2 = File::open(&p).map_err(|e| format!("Failed to open {}: {}", p.display(), e))?;
     let mut lines = Vec::with_capacity(end_line - start_line + 1);
     for (idx, line) in BufReader::new(file2).lines().enumerate() {
         let n = idx + 1;
@@ -942,6 +1011,41 @@ mod tests {
 
         // Must skip .git
         assert!(!names.contains(&".git".to_string()));
+
+        let _ = stdfs::remove_dir_all(&temp);
+    }
+
+    #[test]
+    fn resolve_path_handles_plain_and_file_uris() {
+        assert_eq!(
+            resolve_path("/Users/test/project"),
+            std::path::PathBuf::from("/Users/test/project")
+        );
+        assert_eq!(
+            resolve_path("  /Users/test/project  "),
+            std::path::PathBuf::from("/Users/test/project")
+        );
+        assert_eq!(
+            resolve_path("file:///Users/test/project"),
+            std::path::PathBuf::from("/Users/test/project")
+        );
+        assert_eq!(
+            resolve_path("file:///Users/test/my%20project/sub%20folder"),
+            std::path::PathBuf::from("/Users/test/my project/sub folder")
+        );
+    }
+
+    #[test]
+    fn list_dir_resolves_file_urls() {
+        let temp = std::env::temp_dir().join(format!("cmx-file-url-{}", std::process::id()));
+        let _ = stdfs::remove_dir_all(&temp);
+        let _ = stdfs::create_dir_all(&temp);
+        stdfs::write(temp.join("file.txt"), "hello").unwrap();
+
+        let file_url = format!("file://{}", temp.to_string_lossy());
+        let entries = tauri::async_runtime::block_on(list_dir(file_url)).unwrap();
+        assert_eq!(entries.len(), 1);
+        assert_eq!(entries[0].name, "file.txt");
 
         let _ = stdfs::remove_dir_all(&temp);
     }

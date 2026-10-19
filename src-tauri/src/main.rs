@@ -3,7 +3,36 @@
 
 mod commands;
 
+static INITIAL_TARGET_PATH: std::sync::OnceLock<Option<String>> = std::sync::OnceLock::new();
+
+#[tauri::command]
+fn get_initial_target() -> Option<commands::TargetPathInfo> {
+    INITIAL_TARGET_PATH.get().cloned().flatten().map(|p| {
+        let path_obj = commands::resolve_path(&p);
+        let is_dir = path_obj.is_dir();
+        commands::TargetPathInfo {
+            path: path_obj.to_string_lossy().to_string(),
+            is_dir,
+        }
+    })
+}
+
 fn main() {
+    let args: Vec<String> = std::env::args().collect();
+    let mut initial_path: Option<String> = None;
+    for arg in args.into_iter().skip(1) {
+        if !arg.starts_with('-') {
+            let p = std::path::PathBuf::from(&arg);
+            if let Ok(canon) = std::fs::canonicalize(&p) {
+                initial_path = Some(canon.to_string_lossy().to_string());
+            } else {
+                initial_path = Some(arg);
+            }
+            break;
+        }
+    }
+    let _ = INITIAL_TARGET_PATH.set(initial_path);
+
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .setup(|app| {
@@ -128,6 +157,9 @@ fn main() {
             commands::delete_path,
             commands::reveal_in_file_manager,
             commands::list_dir,
+            commands::pick_folder,
+            commands::pick_file,
+            get_initial_target,
             commands::find_files,
             commands::live_grep,
             commands::get_preview,

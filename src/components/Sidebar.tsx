@@ -362,6 +362,8 @@ function TreeNode(props: {
     renameItem,
     revealItem,
     setLoadingFilePath,
+    getFileGitStatus,
+    getDirGitStatus,
   } = editorStore;
 
   const [isRenaming, setIsRenaming] = createSignal(false);

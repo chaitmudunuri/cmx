@@ -427,8 +427,25 @@ function createEditorStore() {
     return statuses[path] || statuses[path.replace(/\\/g, "/")];
   };
 
+  function cleanPath(raw: string): string {
+    let p = raw.trim();
+    if (p.startsWith("file://")) {
+      try {
+        const url = new URL(p);
+        p = decodeURIComponent(url.pathname);
+      } catch {
+        p = p.replace(/^file:\/\//, "");
+        p = decodeURIComponent(p);
+      }
+    }
+    if (p !== "/" && p.length > 1) {
+      p = p.replace(/[/\\]+$/, "");
+    }
+    return p;
+  }
+
   async function loadFolder(rawPath: string) {
-    const path = rawPath.replace(/[/\\]+$/, "");
+    const path = cleanPath(rawPath);
     try {
       const entries = await invoke<any[]>("list_dir", { path });
       setRootPath(path);
@@ -829,21 +846,38 @@ function createEditorStore() {
 
   function extractSelectedPath(selected: any): string | null {
     if (!selected) return null;
-    if (typeof selected === "string") return selected;
+    if (typeof selected === "string") return cleanPath(selected);
     if (Array.isArray(selected) && selected.length > 0) {
       return extractSelectedPath(selected[0]);
     }
     if (typeof selected === "object" && typeof selected.path === "string") {
-      return selected.path;
+      return cleanPath(selected.path);
     }
     return null;
   }
 
   async function openFolderDialog() {
     try {
-      const selected = await open({ directory: true, multiple: false });
-      const path = extractSelectedPath(selected);
-      if (path) {
+      let picked: string | null = null;
+      try {
+        picked = await invoke<string | null>("pick_folder", {
+          defaultPath: rootPath() || undefined,
+        });
+      } catch (err) {
+        console.warn("Native pick_folder failed, trying plugin dialog:", err);
+      }
+
+      if (!picked) {
+        try {
+          const selected = await open({ directory: true, multiple: false });
+          picked = extractSelectedPath(selected);
+        } catch (pluginErr) {
+          console.warn("Plugin open() failed:", pluginErr);
+        }
+      }
+
+      if (picked) {
+        const path = cleanPath(picked);
         await loadFolder(path);
       }
     } catch (err) {
@@ -853,9 +887,26 @@ function createEditorStore() {
 
   async function openFileDialog() {
     try {
-      const selected = await open({ multiple: false, directory: false });
-      const path = extractSelectedPath(selected);
-      if (path) {
+      let picked: string | null = null;
+      try {
+        picked = await invoke<string | null>("pick_file", {
+          defaultPath: rootPath() || undefined,
+        });
+      } catch (err) {
+        console.warn("Native pick_file failed, trying plugin dialog:", err);
+      }
+
+      if (!picked) {
+        try {
+          const selected = await open({ multiple: false, directory: false });
+          picked = extractSelectedPath(selected);
+        } catch (pluginErr) {
+          console.warn("Plugin open() failed:", pluginErr);
+        }
+      }
+
+      if (picked) {
+        const path = cleanPath(picked);
         const name = path.split(/[/\\]/).pop() ?? path;
         if (isBinaryImageFile(name)) {
           openFile(path, name, "");

@@ -1,6 +1,7 @@
 import { createEffect, onCleanup, onMount, Show } from "solid-js";
+import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
-import { editorStore } from "./stores/editor";
+import { editorStore, isBinaryImageFile } from "./stores/editor";
 import TitleBar from "./components/TitleBar";
 import Sidebar from "./components/Sidebar";
 import TabBar from "./components/TabBar";
@@ -215,6 +216,32 @@ export default function App() {
     }).then((un) => {
       unlistenCloseTab = un;
     });
+
+    // Check if launched with CLI path argument (e.g. `cmx .` or `cmx /path/to/folder`)
+    invoke<{ path: string; is_dir: boolean } | null>("get_initial_target")
+      .then(async (target) => {
+        if (!target) return;
+        if (target.is_dir) {
+          await editorStore.loadFolder(target.path);
+        } else {
+          const sep = target.path.includes("\\") ? "\\" : "/";
+          const lastIdx = target.path.lastIndexOf(sep);
+          const parent = lastIdx !== -1 ? target.path.substring(0, lastIdx) : "";
+          if (parent) {
+            await editorStore.loadFolder(parent);
+          }
+          const name = target.path.split(/[/\\]/).pop() ?? target.path;
+          if (isBinaryImageFile(name)) {
+            editorStore.openFile(target.path, name, "");
+          } else {
+            const content = await invoke<string>("read_file", { path: target.path });
+            editorStore.openFile(target.path, name, content);
+          }
+        }
+      })
+      .catch((err) => {
+        console.warn("Could not retrieve initial launch target:", err);
+      });
 
     onCleanup(() => {
       unlistenCloseTab?.();
