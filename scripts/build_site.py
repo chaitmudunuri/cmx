@@ -1022,6 +1022,7 @@ JS = r"""
       { t: "Workspace Search", d: "Ripgrep ignore walker, regex search, match context and file filter.", u: "/features.html#workspace-search", b: "Search" },
       { t: "Live Preview", d: "Markdown, HTML and SVG live render with synced scroll and split view.", u: "/features.html#live-preview", b: "Preview" },
       { t: "Quick Open & Palette", d: "Fuzzy file search on ⌘P / Ctrl+P, Command Palette on ⌘⇧P / Ctrl+Shift+P.", u: "/features.html#quick-open", b: "Navigation" },
+      { t: "Symbol Outline & Git Status", d: "Jump to symbols with ⌘⇧O or @, file status badges and branch tracking.", u: "/features.html#navigation", b: "Navigation" },
       { t: "Performance & Benchmarks", d: "~2.4s startup, ~95 MB RAM, 6.7 MB binary, methodology.", u: "/performance.html", b: "Performance" },
       { t: "Downloads", d: "Download macOS DMG installer or build instructions for Linux and Windows.", u: "/downloads.html", b: "Download" },
       { t: "Documentation Index", d: "Complete documentation: Installation, shortcuts, config, setup.", u: "/docs.html", b: "Docs" },
@@ -1719,6 +1720,7 @@ def p_shortcuts():
 <tbody>
 <tr><td><code>⌘P</code></td><td><code>Ctrl+P</code></td><td>Quick Open — ranked file finder</td></tr>
 <tr><td><code>⌘⇧P</code></td><td><code>Ctrl+Shift+P</code> / <code>F1</code></td><td>Command palette</td></tr>
+<tr><td><code>⌘⇧O</code></td><td><code>Ctrl+Shift+O</code></td><td>Go to symbol in active file (or type <code>@</code> in Quick Open)</td></tr>
 <tr><td><code>⌘⇧F</code></td><td><code>Ctrl+Shift+F</code></td><td>Workspace search</td></tr>
 <tr><td><code>⌘⇧V</code></td><td><code>Ctrl+Shift+V</code></td><td>Toggle live preview (Markdown, HTML, SVG)</td></tr>
 <tr><td><code>⌘S</code></td><td><code>Ctrl+S</code></td><td>Save (save-as for untitled files)</td></tr>

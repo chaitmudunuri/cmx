@@ -40,6 +40,20 @@ pub struct PreviewResult {
     pub total_lines: usize,
 }
 
+#[derive(Debug, Serialize, Clone)]
+pub struct GitFileEntry {
+    pub path: String,
+    pub status: String,
+    pub staged: bool,
+}
+
+#[derive(Debug, Serialize)]
+pub struct GitStatusResult {
+    pub is_repo: bool,
+    pub branch: Option<String>,
+    pub files: Vec<GitFileEntry>,
+}
+
 /// Maximum file size allowed to be loaded into webview editor: 100 MB
 const MAX_FILE_SIZE_BYTES: u64 = 100 * 1024 * 1024;
 
@@ -258,6 +272,143 @@ pub async fn reveal_in_file_manager(path: String) -> Result<(), String> {
     }
 
     Ok(())
+}
+
+/// Query git status and current branch for a workspace folder
+#[tauri::command]
+pub async fn get_git_status(root_path: String) -> Result<GitStatusResult, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        let root = Path::new(&root_path);
+        if !root.exists() {
+            return Ok(GitStatusResult {
+                is_repo: false,
+                branch: None,
+                files: vec![],
+            });
+        }
+
+        // Check if root is inside a git work tree
+        let inside_output = std::process::Command::new("git")
+            .arg("-C")
+            .arg(&root_path)
+            .arg("rev-parse")
+            .arg("--is-inside-work-tree")
+            .output();
+
+        let is_inside = match inside_output {
+            Ok(out) if out.status.success() => {
+                String::from_utf8_lossy(&out.stdout).trim() == "true"
+            }
+            _ => false,
+        };
+
+        if !is_inside {
+            return Ok(GitStatusResult {
+                is_repo: false,
+                branch: None,
+                files: vec![],
+            });
+        }
+
+        // Query branch
+        let branch = std::process::Command::new("git")
+            .arg("-C")
+            .arg(&root_path)
+            .arg("branch")
+            .arg("--show-current")
+            .output()
+            .ok()
+            .and_then(|out| {
+                if out.status.success() {
+                    let s = String::from_utf8_lossy(&out.stdout).trim().to_string();
+                    if !s.is_empty() {
+                        return Some(s);
+                    }
+                }
+                None
+            })
+            .or_else(|| {
+                std::process::Command::new("git")
+                    .arg("-C")
+                    .arg(&root_path)
+                    .arg("rev-parse")
+                    .arg("--abbrev-ref")
+                    .arg("HEAD")
+                    .output()
+                    .ok()
+                    .and_then(|out| {
+                        if out.status.success() {
+                            let s = String::from_utf8_lossy(&out.stdout).trim().to_string();
+                            if !s.is_empty() && s != "HEAD" {
+                                return Some(s);
+                            }
+                        }
+                        None
+                    })
+            });
+
+        // Query status via porcelain
+        let status_output = std::process::Command::new("git")
+            .arg("-C")
+            .arg(&root_path)
+            .arg("status")
+            .arg("--porcelain=v1")
+            .arg("-uall")
+            .output();
+
+        let mut files = Vec::new();
+        if let Ok(out) = status_output {
+            if out.status.success() {
+                let stdout = String::from_utf8_lossy(&out.stdout);
+                for line in stdout.lines() {
+                    if line.len() < 4 {
+                        continue;
+                    }
+                    let staged_char = line.chars().next().unwrap_or(' ');
+                    let unstaged_char = line.chars().nth(1).unwrap_or(' ');
+                    let mut path_part = line[3..].trim();
+
+                    // Handle renames: "R  old -> new"
+                    if let Some(pos) = path_part.find(" -> ") {
+                        path_part = &path_part[pos + 4..];
+                    }
+                    let clean_path = path_part.trim_matches('"').replace('\\', "/");
+
+                    let (status, staged) = if staged_char == '?' && unstaged_char == '?' {
+                        ("U".to_string(), false)
+                    } else if unstaged_char == 'M' {
+                        ("M".to_string(), staged_char != ' ' && staged_char != '?')
+                    } else if staged_char == 'M' {
+                        ("M".to_string(), true)
+                    } else if staged_char == 'A' || unstaged_char == 'A' {
+                        ("A".to_string(), staged_char == 'A')
+                    } else if staged_char == 'D' || unstaged_char == 'D' {
+                        ("D".to_string(), staged_char == 'D')
+                    } else if staged_char == 'R' || unstaged_char == 'R' {
+                        ("R".to_string(), staged_char == 'R')
+                    } else if staged_char == 'U' || unstaged_char == 'U' {
+                        ("C".to_string(), false)
+                    } else {
+                        ("M".to_string(), staged_char != ' ')
+                    };
+
+                    files.push(GitFileEntry {
+                        path: clean_path,
+                        status,
+                        staged,
+                    });
+                }
+            }
+        }
+
+        Ok(GitStatusResult {
+            is_repo: true,
+            branch,
+            files,
+        })
+    })
+    .await
+    .map_err(|e| format!("Git status task error: {}", e))?
 }
 
 /// List the entries in a directory, returning them sorted (directories first, then alphabetical)
@@ -715,5 +866,42 @@ mod tests {
         assert_eq!(r.lines.len(), 11);
         assert_eq!(r.lines[5], "line 250");
         let _ = stdfs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn git_status_non_git_dir_returns_safely() {
+        let temp = std::env::temp_dir().join(format!("cmx-non-git-{}", std::process::id()));
+        let _ = stdfs::create_dir_all(&temp);
+        let res = tauri::async_runtime::block_on(get_git_status(temp.to_string_lossy().to_string())).unwrap();
+        assert!(!res.is_repo);
+        assert!(res.branch.is_none());
+        assert!(res.files.is_empty());
+        let _ = stdfs::remove_dir_all(&temp);
+    }
+
+    #[test]
+    fn git_status_detects_branch_and_untracked_files() {
+        let temp = std::env::temp_dir().join(format!("cmx-git-test-{}", std::process::id()));
+        let _ = stdfs::remove_dir_all(&temp);
+        let _ = stdfs::create_dir_all(&temp);
+
+        // Run git init
+        let init = std::process::Command::new("git")
+            .arg("-C")
+            .arg(&temp)
+            .arg("init")
+            .output();
+
+        if let Ok(out) = init {
+            if out.status.success() {
+                // Create an untracked file
+                stdfs::write(temp.join("hello.txt"), "hello").unwrap();
+
+                let res = tauri::async_runtime::block_on(get_git_status(temp.to_string_lossy().to_string())).unwrap();
+                assert!(res.is_repo);
+                assert!(res.files.iter().any(|f| f.path == "hello.txt" && f.status == "U"));
+            }
+        }
+        let _ = stdfs::remove_dir_all(&temp);
     }
 }

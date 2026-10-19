@@ -37,6 +37,9 @@ export default function StatusBar() {
     isWordWrap,
     toggleWordWrap,
     openGoToLine,
+    gitBranch,
+    isGitRepo,
+    refreshGitStatus,
   } = editorStore;
 
   const cursorInfo = () => {
@@ -66,6 +69,17 @@ export default function StatusBar() {
   return (
     <div class="status-bar" aria-label="Document status">
       <div class="status-left">
+        <Show when={isGitRepo() && gitBranch()}>
+          <span
+            class="status-item status-clickable status-branch"
+            onClick={() => void refreshGitStatus()}
+            title={`Git branch: ${gitBranch()} (Click to refresh status)`}
+          >
+            <i class="codicon codicon-git-branch" />
+            <span>{gitBranch()}</span>
+          </span>
+        </Show>
+
         <Show when={loadingFilePath()}>
           <span class="status-item status-loading">
             <i class="codicon codicon-loading codicon-modifier-spin" />

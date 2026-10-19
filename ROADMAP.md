@@ -49,7 +49,8 @@ No commitment — things people have asked for that haven't been sequenced yet.
 
 - Global symbol search
 - Multi-cursor editing driven by selection matches
-- Git integration (status in the file explorer)
+- Git integration (status in the file explorer and status bar) — *Shipped*
+- Symbol outline (`⌘⇧O` / `@`) — *Shipped*
 - Formatters wired to language servers
 - Multiple windows for the same workspace
 

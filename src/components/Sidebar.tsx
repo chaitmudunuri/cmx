@@ -21,6 +21,11 @@ export default function Sidebar() {
     setSidebarWidth,
     sidebarView,
     openSidebarView,
+    isGitRepo,
+    gitBranch,
+    getFileGitStatus,
+    getDirGitStatus,
+    refreshGitStatus,
   } = editorStore;
 
   const [isDragging, setIsDragging] = createSignal(false);
@@ -208,7 +213,15 @@ export default function Sidebar() {
         fallback={<SidebarSearch />}
       >
         <div class="sidebar-header">
-          <span>Explorer</span>
+          <div class="sidebar-title-group">
+            <span class="sidebar-title">Explorer</span>
+            <Show when={isGitRepo() && gitBranch()}>
+              <span class="sidebar-branch-pill" title={`Git branch: ${gitBranch()}`}>
+                <i class="codicon codicon-git-branch" />
+                <span>{gitBranch()}</span>
+              </span>
+            </Show>
+          </div>
           <div style="display: flex; gap: 2px;">
             <button
               onClick={() => handleStartNewFile()}
@@ -586,6 +599,8 @@ function TreeNode(props: {
     !props.node.isDir && activeFilePath() === props.node.path;
 
   const fileIconInfo = () => (!props.node.isDir ? getFileIcon(props.node.name) : null);
+  const gitStatus = () => (!props.node.isDir ? getFileGitStatus(props.node.path) : undefined);
+  const dirGitStatus = () => (props.node.isDir ? getDirGitStatus(props.node.path) : undefined);
 
   return (
     <>
@@ -628,7 +643,15 @@ function TreeNode(props: {
 
         <Show
           when={isRenaming()}
-          fallback={<span class="tree-name">{props.node.name}</span>}
+          fallback={
+            <span
+              class={`tree-name ${
+                gitStatus() ? `git-${gitStatus()!.status.toLowerCase()}` : ""
+              }`}
+            >
+              {props.node.name}
+            </span>
+          }
         >
           <input
             ref={renameInputRef}
@@ -640,6 +663,40 @@ function TreeNode(props: {
             onBlur={handleConfirmRename}
             onClick={(e) => e.stopPropagation()}
           />
+        </Show>
+
+        <Show when={gitStatus()}>
+          <span
+            class={`git-status-badge git-status-${gitStatus()!.status.toLowerCase()}`}
+            title={
+              gitStatus()!.status === "M"
+                ? gitStatus()!.staged
+                  ? "Modified (Staged)"
+                  : "Modified"
+                : gitStatus()!.status === "U"
+                ? "Untracked"
+                : gitStatus()!.status === "A"
+                ? "Added"
+                : gitStatus()!.status === "D"
+                ? "Deleted"
+                : "Renamed"
+            }
+          >
+            {gitStatus()!.status}
+          </span>
+        </Show>
+
+        <Show when={dirGitStatus() && !props.node.expanded}>
+          <span
+            class={`git-dir-dot ${
+              dirGitStatus()!.hasModified ? "git-dot-m" : "git-dot-u"
+            }`}
+            title={`${dirGitStatus()!.count} changed file${
+              dirGitStatus()!.count > 1 ? "s" : ""
+            }`}
+          >
+            ●
+          </span>
         </Show>
       </div>
 

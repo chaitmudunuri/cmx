@@ -109,6 +109,13 @@ export default function App() {
       return;
     }
 
+    // Symbol Outline shortcut (⌘⇧O / Ctrl+Shift+O)
+    if (isMod && e.shiftKey && e.key.toLowerCase() === "o") {
+      e.preventDefault();
+      openSearch("symbols");
+      return;
+    }
+
     // Go to Line shortcut (⌘G / Ctrl+G)
     if (isMod && e.key.toLowerCase() === "g") {
       e.preventDefault();

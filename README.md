@@ -223,8 +223,10 @@ Vim mode level, text size, tab size and font — each previewed as you change it
 - **File explorer** — create/rename/delete files and folders inline, reveal
   in Finder/Explorer, open/close folder; the tree patches itself in place
   (no collapse-everything reloads on save).
+- **Git status integration** — file change badges (`M` modified, `U` untracked, `A` added, `D` deleted), directory change dots, and active Git branch pill in the sidebar and status bar.
 - **Quick Open (`⌘P`)** — ranked file finder (filename hits first),
-  command palette (`⌘⇧P` / `F1`), and `:line[,col]` Go to Line.
+  command palette (`⌘⇧P` / `F1`), symbol outline (`⌘⇧O` / `@`), and `:line[,col]` Go to Line.
+- **Symbol Outline (`⌘⇧O`)** — fast jump-to-symbol picker for active file (functions, methods, classes, structs, interfaces, types, and Markdown headings) with live preview.
 - **Search (`⌘⇧F`)** — workspace-wide search with 2-line context, grouped by
   file, match highlighting and a 150 ms debounce; in-flight searches cancel
   when you keep typing. Honours `.gitignore`, skips hidden files, needs no
@@ -238,7 +240,7 @@ Toggle with `⌘⇧V`. Side-by-side rendering for **Markdown** (debounced, GitHu
 double-click reset.
 
 ### Status bar
-Vim pill, language, `Ln, Col` (click → Go to Line) with **total line
+Git branch indicator, Vim pill, language, `Ln, Col` (click → Go to Line) with **total line
 count**, selection size, word-wrap toggle, encoding — plus loading and
 fast-mode indicators.
 
@@ -248,6 +250,7 @@ fast-mode indicators.
 |---|---|
 | `⌘P` / `Ctrl+P` | Quick Open (ranked file finder) |
 | `⌘⇧P` / `F1` | Command palette |
+| `⌘⇧O` / `Ctrl+Shift+O` | Go to symbol in active file (or type `@` in Quick Open) |
 | `⌘⇧F` / `Ctrl+Shift+F` | Workspace search |
 | `⌘⇧V` / `Ctrl+Shift+V` | Toggle live preview (Markdown/HTML/SVG) |
 | `⌘S` / `Ctrl+S` | Save (no tree reload; save-as for untitled) |

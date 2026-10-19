@@ -326,6 +326,7 @@ export default function Editor() {
     tabSize,
     openGoToLine,
     registerSaveHandler,
+    registerActiveEditorView,
     openFiles,
   } = editorStore;
 
@@ -375,6 +376,7 @@ export default function Editor() {
         { key: "Mod-p", run: () => (openSearch("files"), true) },
         { key: "Mod-Shift-f", run: () => (openSearch("grep"), true) },
         { key: "Mod-Shift-p", run: () => (openSearch("commands"), true) },
+        { key: "Mod-Shift-o", run: () => (openSearch("symbols"), true) },
         { key: "Mod-g", run: () => (openGoToLine(), true) },
         { key: "Alt-z", run: () => (toggleWordWrap(), true) },
         // ⌘W is owned by the native menu (main.rs accelerator -> "close-active-tab")
@@ -520,6 +522,7 @@ export default function Editor() {
       return;
     }
     view = new EditorView({ parent: el });
+    registerActiveEditorView(view);
     attachVimListener();
     switchTo(activeFilePath());
   }
@@ -671,6 +674,7 @@ export default function Editor() {
   });
 
   onCleanup(() => {
+    registerActiveEditorView(null);
     view?.destroy();
     view = undefined;
   });

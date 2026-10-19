@@ -128,6 +128,7 @@ fn main() {
             commands::find_files,
             commands::live_grep,
             commands::get_preview,
+            commands::get_git_status,
         ])
         .run(tauri::generate_context!())
         .expect("error while running cmx editor");

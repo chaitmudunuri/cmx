@@ -3,6 +3,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
 import { editorStore, isBinaryImageFile } from "../stores/editor";
 import { getFileIcon } from "./FileIcon";
+import { extractSymbols, getSymbolIcon, type SymbolItem } from "../utils/symbols";
 
 interface FileSearchResult {
   path: string;
@@ -34,7 +35,10 @@ export default function QuickOpen() {
     closeActiveFile,
     closeAllFiles,
     closeOtherFiles,
+    activeFile,
     activeFilePath,
+    getActiveEditorView,
+    refreshGitStatus,
     isWordWrap,
     toggleWordWrap,
     toggleSidebar,
@@ -55,12 +59,24 @@ export default function QuickOpen() {
 
   const [query, setQuery] = createSignal("");
   const [fileResults, setFileResults] = createSignal<FileSearchResult[]>([]);
+  const [fileSymbols, setFileSymbols] = createSignal<SymbolItem[]>([]);
   const [selectedIndex, setSelectedIndex] = createSignal(0);
   const [isLoading, setIsLoading] = createSignal(false);
   let inputRef: HTMLInputElement | undefined;
   let listRef: HTMLDivElement | undefined;
   let debounceTimer: any = null;
   let fileSearchSeq = 0;
+
+  function extractActiveSymbols() {
+    const file = activeFile();
+    if (!file) {
+      setFileSymbols([]);
+      return;
+    }
+    const view = getActiveEditorView();
+    const list = extractSymbols(file.content, file.language, view);
+    setFileSymbols(list);
+  }
 
   async function openFileDialog() {
     const selected = await open({ multiple: false, directory: false });
@@ -253,6 +269,27 @@ export default function QuickOpen() {
       },
     },
     {
+      id: "nav.gotoSymbol",
+      category: "Go",
+      title: "Go to Symbol in Editor...",
+      shortcut: "⌘⇧O",
+      icon: "codicon-symbol-class",
+      action: () => {
+        setQuery("@");
+        extractActiveSymbols();
+      },
+    },
+    {
+      id: "git.refresh",
+      category: "Git",
+      title: "Git: Refresh Repository Status",
+      icon: "codicon-git-branch",
+      action: () => {
+        closeSearch();
+        void refreshGitStatus();
+      },
+    },
+    {
       id: "vim.toggle",
       category: "Vim",
       title: `Toggle Vim Mode (${isVimMode() ? "Disable" : "Enable"})`,
@@ -299,6 +336,8 @@ export default function QuickOpen() {
     const q = query();
     if (q.startsWith(">")) return "commands";
     if (q.startsWith(":")) return "goto";
+    if (q.startsWith("@")) return "symbols";
+    if (searchMode() === "symbols") return "symbols";
     return searchMode() === "commands" ? "commands" : "files";
   };
 
@@ -313,10 +352,26 @@ export default function QuickOpen() {
     );
   };
 
+  const filteredSymbols = () => {
+    let q = query().trim().toLowerCase();
+    if (q.startsWith("@")) q = q.slice(1).trim();
+    const list = fileSymbols();
+    if (!q) return list;
+    return list.filter(
+      (s) =>
+        s.name.toLowerCase().includes(q) ||
+        (s.detail && s.detail.toLowerCase().includes(q)) ||
+        s.kind.toLowerCase().includes(q)
+    );
+  };
+
   createEffect(() => {
     if (isSearchOpen()) {
       if (searchMode() === "commands") {
         setQuery(">");
+      } else if (searchMode() === "symbols") {
+        setQuery("@");
+        extractActiveSymbols();
       } else {
         setQuery("");
       }
@@ -336,7 +391,11 @@ export default function QuickOpen() {
     setQuery(val);
     setSelectedIndex(0);
 
-    if (val.startsWith(">") || val.startsWith(":")) {
+    if (val.startsWith("@") && fileSymbols().length === 0) {
+      extractActiveSymbols();
+    }
+
+    if (val.startsWith(">") || val.startsWith(":") || val.startsWith("@")) {
       return;
     }
 
@@ -383,6 +442,8 @@ export default function QuickOpen() {
         ? filteredCommands().length
         : mode === "goto"
         ? 1
+        : mode === "symbols"
+        ? filteredSymbols().length
         : fileResults().length;
 
     if (e.key === "Escape") {
@@ -415,7 +476,7 @@ export default function QuickOpen() {
       return;
     }
 
-    if (e.key === "Backspace" && (query() === ">" || query() === ":")) {
+    if (e.key === "Backspace" && (query() === ">" || query() === ":" || query() === "@")) {
       setSearchMode("files");
     }
   }
@@ -446,6 +507,15 @@ export default function QuickOpen() {
       const col = parts.length > 1 ? parseInt(parts[1], 10) : 1;
       if (!isNaN(line) && line > 0) {
         jumpTo(line, isNaN(col) ? 1 : col);
+      }
+      closeSearch();
+      return;
+    }
+
+    if (mode === "symbols") {
+      const sym = filteredSymbols()[selectedIndex()];
+      if (sym) {
+        jumpTo(sym.line, sym.col || 1);
       }
       closeSearch();
       return;
@@ -496,6 +566,8 @@ export default function QuickOpen() {
                   ? "codicon-terminal"
                   : currentMode() === "goto"
                   ? "codicon-go-to-file"
+                  : currentMode() === "symbols"
+                  ? "codicon-symbol-class"
                   : "codicon-search"
               } quick-open-prompt-icon`}
             />
@@ -508,7 +580,9 @@ export default function QuickOpen() {
                   ? "Type a command or search actions..."
                   : currentMode() === "goto"
                   ? "Type line number to jump to..."
-                  : "Search files by name (type > for commands, : for line)..."
+                  : currentMode() === "symbols"
+                  ? "Type to filter symbols in active file (@)..."
+                  : "Search files by name (type > for commands, @ for symbols, : for line)..."
               }
               value={query()}
               onInput={onInput}
@@ -562,7 +636,49 @@ export default function QuickOpen() {
               </div>
             </Show>
 
-            {/* Mode 3: Files */}
+            {/* Mode 3: Symbols */}
+            <Show when={currentMode() === "symbols"}>
+              <For each={filteredSymbols()}>
+                {(sym, i) => {
+                  const iconInfo = getSymbolIcon(sym.kind);
+                  return (
+                    <div
+                      class={`quick-open-item ${
+                        selectedIndex() === i() ? "active" : ""
+                      }`}
+                      onClick={() => {
+                        setSelectedIndex(i());
+                        selectCurrent();
+                      }}
+                      onMouseEnter={() => setSelectedIndex(i())}
+                    >
+                      <div class="quick-open-item-main">
+                        <span
+                          class="quick-open-file-icon"
+                          style={{ color: iconInfo.color }}
+                        >
+                          <i class={`codicon ${iconInfo.icon}`} />
+                        </span>
+                        <span class="quick-open-label">{sym.name}</span>
+                        <Show when={sym.detail}>
+                          <span class="quick-open-symbol-kind">{sym.detail}</span>
+                        </Show>
+                      </div>
+                      <span class="quick-open-line-badge">line {sym.line}</span>
+                    </div>
+                  );
+                }}
+              </For>
+              <Show when={filteredSymbols().length === 0}>
+                <div class="quick-open-empty">
+                  {activeFile()
+                    ? "No symbols found in this file"
+                    : "No file currently open"}
+                </div>
+              </Show>
+            </Show>
+
+            {/* Mode 4: Files */}
             <Show when={currentMode() === "files"}>
               <For each={fileResults()}>
                 {(item, i) => {

@@ -21,8 +21,20 @@ export interface OpenFile {
   sizeBytes?: number;
 }
 
-export type SearchMode = "files" | "grep" | "commands";
+export type SearchMode = "files" | "grep" | "commands" | "symbols";
 export type SidebarView = "explorer" | "search";
+
+export interface GitFileStatus {
+  path: string;
+  status: string;
+  staged: boolean;
+}
+
+export interface GitDirStatus {
+  hasModified: boolean;
+  hasUntracked: boolean;
+  count: number;
+}
 
 export interface ConfirmCloseState {
   path: string;
@@ -149,6 +161,19 @@ function createEditorStore() {
   );
   const [isGoToLineOpen, setIsGoToLineOpen] = createSignal<boolean>(false);
   const [pendingConfirmClose, setPendingConfirmClose] = createSignal<ConfirmCloseState | null>(null);
+
+  const [isGitRepo, setIsGitRepo] = createSignal<boolean>(false);
+  const [gitBranch, setGitBranch] = createSignal<string | null>(null);
+  const [gitFileStatuses, setGitFileStatuses] = createSignal<Record<string, GitFileStatus>>({});
+  const [gitDirStatuses, setGitDirStatuses] = createSignal<Record<string, GitDirStatus>>({});
+
+  let activeEditorView: any = null;
+  function registerActiveEditorView(view: any) {
+    activeEditorView = view;
+  }
+  function getActiveEditorView() {
+    return activeEditorView;
+  }
 
   let saveActiveFileHandler: (() => Promise<boolean>) | null = null;
   function registerSaveHandler(fn: () => Promise<boolean>) {
@@ -321,6 +346,86 @@ function createEditorStore() {
     setFontId(next.id);
   }
 
+  async function refreshGitStatus() {
+    const root = rootPath();
+    if (!root) {
+      setIsGitRepo(false);
+      setGitBranch(null);
+      setGitFileStatuses({});
+      setGitDirStatuses({});
+      return;
+    }
+
+    try {
+      const res = await invoke<{
+        is_repo: boolean;
+        branch: string | null;
+        files: Array<{ path: string; status: string; staged: boolean }>;
+      }>("get_git_status", { rootPath: root });
+
+      if (!res || !res.is_repo) {
+        setIsGitRepo(false);
+        setGitBranch(null);
+        setGitFileStatuses({});
+        setGitDirStatuses({});
+        return;
+      }
+
+      setIsGitRepo(true);
+      setGitBranch(res.branch);
+
+      const fileMap: Record<string, GitFileStatus> = {};
+      const dirMap: Record<string, GitDirStatus> = {};
+
+      const normRoot = root.replace(/\\/g, "/").replace(/\/$/, "");
+
+      for (const item of res.files) {
+        const normRel = item.path.replace(/\\/g, "/");
+        const full = `${normRoot}/${normRel}`;
+
+        const fileStatus: GitFileStatus = {
+          path: normRel,
+          status: item.status,
+          staged: item.staged,
+        };
+
+        fileMap[full] = fileStatus;
+        fileMap[normRel] = fileStatus;
+
+        // Roll up to all ancestor directories
+        const parts = normRel.split("/");
+        let current = normRoot;
+        for (let i = 0; i < parts.length - 1; i++) {
+          current = `${current}/${parts[i]}`;
+          const existing = dirMap[current] || {
+            hasModified: false,
+            hasUntracked: false,
+            count: 0,
+          };
+          existing.count++;
+          if (item.status === "U") existing.hasUntracked = true;
+          else existing.hasModified = true;
+          dirMap[current] = existing;
+        }
+      }
+
+      setGitFileStatuses(fileMap);
+      setGitDirStatuses(dirMap);
+    } catch (err) {
+      console.warn("Failed to check git status:", err);
+    }
+  }
+
+  const getFileGitStatus = (path: string): GitFileStatus | undefined => {
+    const statuses = gitFileStatuses();
+    return statuses[path] || statuses[path.replace(/\\/g, "/")];
+  };
+
+  const getDirGitStatus = (path: string): GitDirStatus | undefined => {
+    const statuses = gitDirStatuses();
+    return statuses[path] || statuses[path.replace(/\\/g, "/")];
+  };
+
   async function loadFolder(path: string) {
     try {
       const entries = await invoke<any[]>("list_dir", { path });
@@ -336,10 +441,15 @@ function createEditorStore() {
           loaded: false,
         }))
       );
+      void refreshGitStatus();
     } catch (err) {
       console.warn("Could not reload folder:", err);
       localStorage.removeItem(STORAGE_ROOT_KEY);
       setRootPath(null);
+      setIsGitRepo(false);
+      setGitBranch(null);
+      setGitFileStatuses({});
+      setGitDirStatuses({});
     }
   }
 
@@ -464,6 +574,10 @@ function createEditorStore() {
       setRootPath(null);
       localStorage.removeItem(STORAGE_ROOT_KEY);
       setFileTree([]);
+      setIsGitRepo(false);
+      setGitBranch(null);
+      setGitFileStatuses({});
+      setGitDirStatuses({});
     });
   }
 
@@ -776,6 +890,7 @@ function createEditorStore() {
     if (idx !== -1) {
       setOpenFiles(idx, "isModified", false);
       saveSession();
+      void refreshGitStatus();
     }
   }
 
@@ -825,7 +940,16 @@ function createEditorStore() {
   async function refreshExplorer() {
     if (rootPath()) {
       await loadFolder(rootPath()!);
+      await refreshGitStatus();
     }
+  }
+
+  if (typeof window !== "undefined") {
+    window.addEventListener("focus", () => {
+      if (rootPath()) {
+        void refreshGitStatus();
+      }
+    });
   }
 
   return {
@@ -933,6 +1057,15 @@ function createEditorStore() {
     registerSaveHandler,
     closeActiveFile,
     refreshExplorer,
+    isGitRepo,
+    gitBranch,
+    gitFileStatuses,
+    gitDirStatuses,
+    getFileGitStatus,
+    getDirGitStatus,
+    refreshGitStatus,
+    registerActiveEditorView,
+    getActiveEditorView,
     cursorPosition,
     setCursorPosition,
     docLineCount,
