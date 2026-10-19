@@ -1,8 +1,8 @@
 <h1 align="center">CMX</h1>
 
 <p align="center">
-  <b>A lightweight, high performance code editor with Vim mode, workspace search, and live preview.<br>
-  No Electron, no bundled browser.</b>
+  <b>A lightweight code editor engineered for speed.<br>
+  Powered by Rust and the native OS webview with Vim mode, workspace search, and live preview.</b>
 </p>
 
 <p align="center">

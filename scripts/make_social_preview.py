@@ -109,12 +109,12 @@ def draw_wordmark(d: ImageDraw.ImageDraw) -> None:
 
 def draw_copy(d: ImageDraw.ImageDraw) -> None:
     x = 72
-    d.text((x, 308), "Lightweight, high performance", font=font(31, "Semibold"), fill=TEXT)
-    d.text((x, 352), "code editor with Vim mode, search", font=font(24, "Regular"), fill=MUTED)
-    d.text((x, 384), "and live preview.", font=font(24, "Regular"), fill=MUTED)
+    d.text((x, 308), "Engineered for speed.", font=font(31, "Semibold"), fill=TEXT)
+    d.text((x, 352), "A lightweight code editor with Vim mode,", font=font(24, "Regular"), fill=MUTED)
+    d.text((x, 384), "workspace search, and live preview.", font=font(24, "Regular"), fill=MUTED)
 
     # supporting-badge row
-    labels = ["No Electron", "No bundled browser", "MIT licensed"]
+    labels = ["No Electron", "Rust + OS Webview", "~7 MB binary"]
     fx, fy = x, 462
     for label in labels:
         f = font(17, "Medium")

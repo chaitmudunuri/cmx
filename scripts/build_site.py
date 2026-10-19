@@ -48,8 +48,8 @@ DMG_SIZE_BYTES = 3_797_048
 
 OG_IMAGE = f"{SITE_URL}/social-preview.png"
 
-TAGLINE = ("A lightweight, high performance code editor with Vim mode, workspace search, "
-           "and live preview. No Electron, no bundled browser.")
+TAGLINE = ("A lightweight code editor engineered for speed. Powered by Rust and "
+           "the native OS webview with Vim mode, workspace search, and live preview.")
 
 PLATFORMS = "macOS, Linux, Windows"
 
@@ -691,8 +691,8 @@ html[data-theme="light"] .moon-icon{display:block}
 .rule i{display:block;height:6px;border-radius:999px}
 .rule i:nth-child(1){width:70px;background:var(--accent)}
 .rule i:nth-child(2){width:44px;background:#21cee8}
-.tagline{font-size:clamp(21px,2.9vw,27px);font-weight:680;margin:0 0 14px;max-width:31ch;letter-spacing:-.02em;line-height:1.3}
-.sub{color:var(--text-soft);font-size:18px;margin:0;max-width:58ch}
+.tagline{font-size:clamp(22px,3vw,28px);font-weight:700;margin:0 0 16px;max-width:48ch;letter-spacing:-.025em;line-height:1.25}
+.sub{color:var(--text-soft);font-size:18px;line-height:1.6;margin:0;max-width:62ch}
 
 .cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:34px}
 .btn{
@@ -1016,7 +1016,7 @@ JS = r"""
     if (!modal || !input || !resultsBox) return;
 
     var searchItems = [
-      { t: "Home", d: "A lightweight, high performance code editor with Vim mode, search and live preview.", u: "/index.html", b: "Page" },
+      { t: "Home", d: "A lightweight code editor engineered for speed.", u: "/index.html", b: "Page" },
       { t: "Features Overview", d: "CodeMirror 6 core, multiple cursors, fast mode, syntax highlight, themes.", u: "/features.html", b: "Features" },
       { t: "Vim Mode", d: "Three levels: Off, Friendly, Expert. Ex command bar (:w, :q, :s, :noh).", u: "/features.html#vim-mode", b: "Vim" },
       { t: "Workspace Search", d: "Ripgrep ignore walker, regex search, match context and file filter.", u: "/features.html#workspace-search", b: "Search" },
@@ -1172,10 +1172,9 @@ def p_hero():
 <section class="hero">
   <h1 class="logo">CMX</h1>
   <div class="rule"><i></i><i></i></div>
-  <p class="tagline">{html.escape(TAGLINE)}</p>
-  <p class="sub">A <b>~7&nbsp;MB</b> binary, <b>~95&nbsp;MB</b> resident memory and a
-    <b>~2.4&nbsp;s</b> cold start — because CMX renders in the OS webview instead of bundling
-    a browser.</p>
+  <p class="tagline">A lightweight code editor engineered for speed.</p>
+  <p class="sub">Powered by Rust and the native OS webview. Real Vim mode,
+    lightning-fast workspace search, and split live preview in a clean <b>~7&nbsp;MB</b> package.</p>
   <div class="cta">
     <a class="btn btn-p" href="{LATEST_URL}" rel="noopener">Download for macOS</a>
     <a class="btn btn-s" href="/downloads.html">All platforms</a>

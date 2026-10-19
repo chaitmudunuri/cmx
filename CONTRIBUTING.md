@@ -33,8 +33,8 @@ searchable and what stops the docs drifting apart.
 **The one-liner.** Use this sentence, unchanged, in the README opening, the
 project website, and the first line of every release:
 
-> A lightweight, high performance code editor with Vim mode, workspace search, and live
-> preview. No Electron, no bundled browser.
+> A lightweight code editor engineered for speed. Powered by Rust and the native
+> OS webview with Vim mode, workspace search, and live preview.
 
 **The name.** Write **CMX** in prose. `cmx` is the repository and `cmx editor`
 is the installed application bundle — use those only when you mean the repo or

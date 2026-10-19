@@ -7,8 +7,8 @@ source of truth for what actually gets built next.
 Want to influence it? [Vote on open issues](https://github.com/chaitmudunuri/cmx/issues)
 or [start a discussion](https://github.com/chaitmudunuri/cmx/discussions).
 
-**What CMX is:** a lightweight, high performance code editor with Vim mode, workspace search,
-and live preview. No Electron, no bundled browser.
+**What CMX is:** a lightweight code editor engineered for speed. Powered by Rust
+and the native OS webview with Vim mode, workspace search, and live preview.
 
 ## Where CMX is today
 
