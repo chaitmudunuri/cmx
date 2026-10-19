@@ -1,7 +1,7 @@
 <h1 align="center">CMX</h1>
 
 <p align="center">
-  <b>A native-feeling code editor with Vim mode, workspace search, and live preview.<br>
+  <b>A lightweight, high performance code editor with Vim mode, workspace search, and live preview.<br>
   No Electron, no bundled browser.</b>
 </p>
 
@@ -42,9 +42,9 @@ so there is no browser runtime to download, patch or ship.
 
 ## Why CMX
 
-Most editors make you choose: a native-feeling app that is slow and heavy, or a
-web-based one that is fast but runs in a browser tab. CMX is built to be neither
-trade-off.
+Most editors make you choose: a feature-packed desktop app that is slow and heavy, or a
+web-based one that is fast but runs in a browser tab. CMX gives you a lightweight,
+high performance editor without the trade-offs.
 
 | | Electron-based editors | Web-based editors | **CMX** |
 |---|---|---|---|

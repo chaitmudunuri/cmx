@@ -118,7 +118,7 @@
     if (!modal || !input || !resultsBox) return;
 
     var searchItems = [
-      { t: "Home", d: "A native-feeling code editor with Vim mode, search and live preview.", u: "/index.html", b: "Page" },
+      { t: "Home", d: "A lightweight, high performance code editor with Vim mode, search and live preview.", u: "/index.html", b: "Page" },
       { t: "Features Overview", d: "CodeMirror 6 core, multiple cursors, fast mode, syntax highlight, themes.", u: "/features.html", b: "Features" },
       { t: "Vim Mode", d: "Three levels: Off, Friendly, Expert. Ex command bar (:w, :q, :s, :noh).", u: "/features.html#vim-mode", b: "Vim" },
       { t: "Workspace Search", d: "Ripgrep ignore walker, regex search, match context and file filter.", u: "/features.html#workspace-search", b: "Search" },

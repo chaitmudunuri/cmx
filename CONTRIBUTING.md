@@ -33,7 +33,7 @@ searchable and what stops the docs drifting apart.
 **The one-liner.** Use this sentence, unchanged, in the README opening, the
 project website, and the first line of every release:
 
-> A native-feeling code editor with Vim mode, workspace search, and live
+> A lightweight, high performance code editor with Vim mode, workspace search, and live
 > preview. No Electron, no bundled browser.
 
 **The name.** Write **CMX** in prose. `cmx` is the repository and `cmx editor`

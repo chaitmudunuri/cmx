@@ -91,6 +91,7 @@ html[data-theme="light"]{
 }
 
 *,*::before,*::after{box-sizing:border-box}
+img{max-width:100%;height:auto}
 html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;scroll-padding-top:84px}
 body{
   margin:0;
@@ -296,7 +297,7 @@ main{padding:44px 0 20px;min-height:60vh}
 .crumbs a{color:var(--text-faint)}
 .crumbs a:hover{color:var(--text)}
 
-.shot{width:100%;border:1px solid var(--border);border-radius:var(--radius);display:block;box-shadow:var(--shadow-lg)}
+.shot{width:100%;height:auto;aspect-ratio:1380/723;border:1px solid var(--border);border-radius:var(--radius);display:block;box-shadow:var(--shadow-lg)}
 figure{margin:0 0 10px}
 figcaption{color:var(--text-soft);font-size:15.5px;margin-top:10px}
 figcaption b{color:var(--text)}
@@ -360,7 +361,7 @@ article.landing > *{max-width:none}
 article.landing .grid{margin:20px 0 32px}
 
 figure.wide{margin:0 0 8px}
-figure.wide .shot{width:100%}
+figure.wide .shot{width:100%;height:auto}
 
 /* --- scannable card groups ---------------------------------------- */
 .cards{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(272px,1fr));margin:14px 0 8px;align-items:start}

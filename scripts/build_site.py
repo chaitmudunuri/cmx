@@ -48,7 +48,7 @@ DMG_SIZE_BYTES = 3_797_048
 
 OG_IMAGE = f"{SITE_URL}/social-preview.png"
 
-TAGLINE = ("A native-feeling code editor with Vim mode, workspace search, "
+TAGLINE = ("A lightweight, high performance code editor with Vim mode, workspace search, "
            "and live preview. No Electron, no bundled browser.")
 
 PLATFORMS = "macOS, Linux, Windows"
@@ -510,6 +510,7 @@ html[data-theme="light"]{
 }
 
 *,*::before,*::after{box-sizing:border-box}
+img{max-width:100%;height:auto}
 html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;scroll-padding-top:84px}
 body{
   margin:0;
@@ -715,7 +716,7 @@ main{padding:44px 0 20px;min-height:60vh}
 .crumbs a{color:var(--text-faint)}
 .crumbs a:hover{color:var(--text)}
 
-.shot{width:100%;border:1px solid var(--border);border-radius:var(--radius);display:block;box-shadow:var(--shadow-lg)}
+.shot{width:100%;height:auto;aspect-ratio:1380/723;border:1px solid var(--border);border-radius:var(--radius);display:block;box-shadow:var(--shadow-lg)}
 figure{margin:0 0 10px}
 figcaption{color:var(--text-soft);font-size:15.5px;margin-top:10px}
 figcaption b{color:var(--text)}
@@ -779,7 +780,7 @@ article.landing > *{max-width:none}
 article.landing .grid{margin:20px 0 32px}
 
 figure.wide{margin:0 0 8px}
-figure.wide .shot{width:100%}
+figure.wide .shot{width:100%;height:auto}
 
 /* --- scannable card groups ---------------------------------------- */
 .cards{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(272px,1fr));margin:14px 0 8px;align-items:start}
@@ -1015,7 +1016,7 @@ JS = r"""
     if (!modal || !input || !resultsBox) return;
 
     var searchItems = [
-      { t: "Home", d: "A native-feeling code editor with Vim mode, search and live preview.", u: "/index.html", b: "Page" },
+      { t: "Home", d: "A lightweight, high performance code editor with Vim mode, search and live preview.", u: "/index.html", b: "Page" },
       { t: "Features Overview", d: "CodeMirror 6 core, multiple cursors, fast mode, syntax highlight, themes.", u: "/features.html", b: "Features" },
       { t: "Vim Mode", d: "Three levels: Off, Friendly, Expert. Ex command bar (:w, :q, :s, :noh).", u: "/features.html#vim-mode", b: "Vim" },
       { t: "Workspace Search", d: "Ripgrep ignore walker, regex search, match context and file filter.", u: "/features.html#workspace-search", b: "Search" },
@@ -1191,9 +1192,9 @@ def p_hero():
 def p_home():
     body = p_hero() + """
 <h2>Why CMX</h2>
-<p>Most editors make you choose between native feel and speed. Electron apps feel
-native but ship a browser runtime; web editors are fast but live in a tab. CMX uses
-the operating system's own webview, so it gets both without owning a browser.</p>
+<p>Most editors make you choose between lightweight speed and full capability. Electron apps ship
+a heavy browser runtime; web editors live in a tab. CMX uses the operating system's own webview,
+giving you a lightweight, high performance editor without owning a browser.</p>
 <div class="grid">
   <div class="card"><h3>No bundled browser</h3><p>WebKit on macOS, WebKitGTK on Linux, WebView2 on
     Windows. Nothing extra to download, patch or ship.</p></div>

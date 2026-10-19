@@ -109,8 +109,8 @@ def draw_wordmark(d: ImageDraw.ImageDraw) -> None:
 
 def draw_copy(d: ImageDraw.ImageDraw) -> None:
     x = 72
-    d.text((x, 308), "A native-feeling code editor", font=font(31, "Semibold"), fill=TEXT)
-    d.text((x, 352), "with Vim mode, workspace search", font=font(24, "Regular"), fill=MUTED)
+    d.text((x, 308), "Lightweight, high performance", font=font(31, "Semibold"), fill=TEXT)
+    d.text((x, 352), "code editor with Vim mode, search", font=font(24, "Regular"), fill=MUTED)
     d.text((x, 384), "and live preview.", font=font(24, "Regular"), fill=MUTED)
 
     # supporting-badge row
