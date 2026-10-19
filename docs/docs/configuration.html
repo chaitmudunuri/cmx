@@ -39,15 +39,14 @@
 <main id="main">
   <div class="wrap">
 <ol class="crumbs"><li><a href="/docs.html">Docs</a></li><li><a href="/docs/configuration.html">Configuration</a></li></ol>
-<h1>Configuration</h1>
-
+<div class="layout"><article><h1>Configuration</h1>
 <p class="lede">Open settings with <code>⌘,</code>. Changes save automatically — there is no save
 button and no settings file to edit.</p>
 <p><a href="https://github.com/chaitmudunuri/cmx"><img class="shot"
   src="/screenshots/05-settings.png" width="1380" height="723" loading="lazy"
   alt="CMX code editor showing the settings dialog with Vim mode, text size, tab size and font options."></a></p>
 
-<h2>Settings</h2>
+<h2 id="settings">Settings</h2>
 <table>
 <thead><tr><th>Setting</th><th>Options</th><th>Notes</th></tr></thead>
 <tbody>
@@ -60,7 +59,7 @@ button and no settings file to edit.</p>
 </tbody>
 </table>
 
-<h2>Fonts</h2>
+<h2 id="fonts">Fonts</h2>
 <p>CMX bundles six monospace faces and renders them without a network round trip:</p>
 <ul class="tags">
 <li>JetBrains Mono</li><li>Fira Code</li><li>Source Code Pro</li>
@@ -68,7 +67,7 @@ button and no settings file to edit.</p>
 </ul>
 <p>JetBrains Mono is the default and is the one with ligatures enabled.</p>
 
-<h2>Where settings live</h2>
+<h2 id="where-settings-live">Where settings live</h2>
 <p>Settings are written to web storage in the app's local data directory, keyed by
 <code>cmx_*</code> entries. They persist across upgrades and are not synced between machines.
 CMX deliberately has no account system and sends no telemetry, so there is nothing to sign in to
@@ -77,10 +76,10 @@ and nothing to lose.</p>
 <a href="/contributing.html#roadmap">roadmap</a>, not yet implemented. If you want settings under
 version control today, note the storage keys above and script them.</p>
 
-<h2>Theme</h2>
+<h2 id="theme">Theme</h2>
 <p>Two themes ship with CMX: a dark theme and a GitHub-style light theme. CMX applies the theme
 before first paint, so there is no flash of the wrong colours on launch.</p>
-
+</article><aside class="aside"><nav class="toc" aria-label="On this page"><p class="toc-title">On this page</p><ol><li><a href="#settings">Settings</a></li><li><a href="#fonts">Fonts</a></li><li><a href="#where-settings-live">Where settings live</a></li><li><a href="#theme">Theme</a></li></ol></nav></aside></div>
   </div>
 </main>
 <footer class="site">

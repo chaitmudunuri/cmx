@@ -39,84 +39,173 @@
 <main id="main">
   <div class="wrap">
 <ol class="crumbs"><li><a href="/features.html">Features</a></li></ol>
-<h1>Features</h1>
+<div class="layout"><article><h1>Features</h1>
+<p class="lede">Everything CMX does — and, at the end, what it deliberately leaves out.
+Figures are on the <a href="/performance.html">performance page</a>.</p>
 
-<p class="lede">Everything CMX does, and what it deliberately leaves out. Measurements are on
-the <a href="/performance.html">performance page</a>.</p>
-
-<h2>Editing</h2>
-<ul>
-<li><b>CodeMirror 6 core.</b> Multiple cursors, bracket matching and closing, folding, a
-  search-and-replace panel, highlighted selection matches and an active-line marker.</li>
-<li><b>14 language grammars, loaded on demand.</b> JavaScript/TypeScript, Python, Rust,
-  C/C++, Java, Go (via the C++ grammar), HTML, CSS, JSON, Markdown, SQL, XML, YAML, Shell and
-  Dockerfile. Opening a Rust file never waits on the Python grammar.</li>
-<li><b>Markdown with highlighted fenced code blocks</b> — headings, emphasis, code, quotes,
-  lists and links.</li>
-<li><b>Tab size</b> 2, 4 or 8; <b>word wrap</b>; zoom in, out and reset; six bundled monospace
-  fonts. See <a href="/docs/configuration.html">configuration</a>.</li>
-</ul>
+<h2 id="editing">Editing</h2>
+<div class="cards">
+  <article class="card">
+    <h3>CodeMirror 6 core</h3>
+    <p>The mature editing engine, not a reimplementation.</p>
+    <ul class="mini">
+      <li>Multiple cursors</li>
+      <li>Bracket matching and closing</li>
+      <li>Code folding</li>
+      <li>Search-and-replace panel</li>
+      <li>Highlighted selection matches</li>
+    </ul>
+  </article>
+  <article class="card">
+    <h3>14 grammars, on demand</h3>
+    <p>Language packs load when a file needs them. Opening a Rust file never
+    waits on the Python grammar.</p>
+    <ul class="tags">
+      <li>JS/TS</li><li>Python</li><li>Rust</li><li>C/C++</li><li>Java</li><li>Go</li>
+      <li>HTML</li><li>CSS</li><li>JSON</li><li>Markdown</li><li>SQL</li>
+      <li>XML</li><li>YAML</li><li>Shell</li><li>Dockerfile</li>
+    </ul>
+  </article>
+  <article class="card">
+    <h3>Markdown, properly</h3>
+    <p>Headings, emphasis, code, quotes, lists and links — with fenced code blocks
+    syntax-highlighted rather than dumped as plain text.</p>
+  </article>
+  <article class="card">
+    <h3>Comfortable defaults</h3>
+    <p>The small things you notice after an hour.</p>
+    <ul class="mini">
+      <li>Tab size 2, 4 or 8</li>
+      <li>Word wrap</li>
+      <li>Zoom in / out / reset</li>
+      <li>Six bundled monospace fonts</li>
+    </ul>
+  </article>
+</div>
+<p><a href="/docs/configuration.html">Configuration →</a></p>
 
 <h2 id="large-files">Large files</h2>
-<p>Files over <b>1.5&nbsp;MB</b> or <b>25,000 lines</b> automatically drop into fast mode:
-parsing and decorative extras switch off so scrolling and editing stay smooth, and a
-<code>⚡&nbsp;FAST</code> badge appears in the status bar so you always know which mode you are in.
-Reopening a file above the threshold always starts in fast mode.</p>
+<p>Files past <b>1.5&nbsp;MB</b> or <b>25,000 lines</b> drop into fast mode: parsing and
+decorative extras switch off so scrolling and editing stay smooth. A
+<span class="badge fast">FAST</span> badge in the status bar always tells you which mode
+you are in, so it is never a mystery.</p>
 
 <h2 id="vim-mode">Vim mode</h2>
 <p>Three levels, switched from the status-bar pill or the command palette.</p>
-<table>
-<thead><tr><th>Level</th><th>What you get</th></tr></thead>
-<tbody>
-<tr><td>Off <span class="pill">default</span></td><td>A plain editor. Nothing is intercepted.</td></tr>
-<tr><td>Friendly</td><td>Hints plus a forgiving Ex command set.</td></tr>
-<tr><td>Expert</td><td>The full motion vocabulary.</td></tr>
-</tbody>
-</table>
-<p>Ex commands: <code>:w</code> <code>:q</code> <code>:q!</code> <code>:wq</code> <code>:x</code>
-<code>:e</code> <code>:noh</code> <code>:bd</code> <code>:new</code>, alongside a which-key style
-hint bar and a mode pill reading <code>NORMAL</code>, <code>INSERT</code> or <code>VISUAL</code>.</p>
-
-<h2>Navigation</h2>
-<h3>File explorer</h3>
-<p>Create, rename and delete files and folders inline; reveal in Finder or Explorer; open and
-close a folder. The tree patches itself in place, so saving a file does not collapse and
-re-expand the whole sidebar.</p>
-<h3>Quick Open</h3>
-<p>A ranked file finder over the open workspace on <code>⌘P</code>, with filename hits ranked
-ahead of directory hits. The command palette is on <code>⌘⇧P</code> or <code>F1</code>, and
-<code>:line[,col]</code> jumps straight to a position.</p>
-<h3>Workspace search</h3>
-<p><code>⌘⇧F</code> searches every file in the workspace and groups matches by file with two lines
-of surrounding context. Results highlight the matched text and update on a 150&nbsp;ms debounce —
-and when you keep typing, in-flight searches are cancelled rather than queued.</p>
-<p>Search is implemented in Rust on ripgrep's <code>ignore</code> crate. It honours
-<code>.gitignore</code> and global excludes and skips hidden files out of the box, and needs
-<b>no external <code>rg</code> binary installed</b>.</p>
-<h3>Tabs</h3>
-<p>Dirty-state dots, per-tab scroll and memory, close one / right / others / all, and a
-confirmation before discarding unsaved changes.</p>
-
-<h2>Live preview</h2>
-<p><code>⌘⇧V</code> renders the document beside the source, split by a resizer you can drag and
-reset with a double-click.</p>
-<ul>
-<li><b>Markdown</b> — debounced, GitHub-flavored rendering.</li>
-<li><b>HTML</b> — rendered in a sandboxed <code>&lt;iframe&gt;</code>, so the document cannot
-  reach the filesystem.</li>
-<li><b>SVG</b> — previewed in place.</li>
+<div class="cards">
+  <article class="card">
+    <h3>Off <span class="badge">default</span></h3>
+    <p>A plain editor. Nothing is intercepted.</p>
+  </article>
+  <article class="card">
+    <h3>Friendly</h3>
+    <p>Hints plus a forgiving Ex command set.</p>
+  </article>
+  <article class="card">
+    <h3>Expert</h3>
+    <p>The full motion vocabulary.</p>
+  </article>
+</div>
+<p>Ex commands:</p>
+<ul class="exgrid">
+  <li>:w<span>save</span></li>
+  <li>:q<span>close</span></li>
+  <li>:q!<span>close, discard</span></li>
+  <li>:wq<span>save and close</span></li>
+  <li>:x<span>save and close</span></li>
+  <li>:e<span>reload</span></li>
+  <li>:noh<span>clear highlight</span></li>
+  <li>:bd<span>close buffer</span></li>
+  <li>:new<span>new buffer</span></li>
 </ul>
+<p>A which-key style hint bar appears alongside a mode pill reading
+<span class="kbd">NORMAL</span> <span class="kbd">INSERT</span> or
+<span class="kbd">VISUAL</span>.</p>
 
-<h2>Status bar</h3>
-<p>Vim mode pill, detected language, <code>Ln</code>/<code>Col</code> that jumps to Go to Line and
-reports the document's total line count, selection size, word-wrap state, encoding, and loading
-and fast-mode indicators.</p>
+<h2 id="navigation">Navigation</h2>
+<div class="cards">
+  <article class="card">
+    <h3>File explorer</h3>
+    <p>Create, rename and delete files and folders inline; reveal in Finder or
+    Explorer; open and close a folder.</p>
+    <ul class="mini">
+      <li>The tree patches itself in place</li>
+      <li>Saving a file never collapses the sidebar</li>
+    </ul>
+  </article>
+  <article class="card">
+    <h3>Quick Open <span class="kbd">⌘P</span></h3>
+    <p>A ranked file finder over the open workspace, with filename hits ranked
+    ahead of directory hits.</p>
+    <ul class="mini">
+      <li><span class="kbd">⌘⇧P</span> or <span class="kbd">F1</span> — command palette</li>
+      <li><code>:line[,col]</code> — jump to a position</li>
+    </ul>
+  </article>
+  <article class="card">
+    <h3>Workspace search <span class="kbd">⌘⇧F</span></h3>
+    <p>Every file in the workspace, grouped by file with two lines of context and
+    the matched text highlighted.</p>
+    <ul class="mini">
+      <li>150&nbsp;ms debounce</li>
+      <li>In-flight searches cancel as you keep typing</li>
+      <li>Honours <code>.gitignore</code> and skips hidden files</li>
+      <li>No external <code>rg</code> binary needed</li>
+    </ul>
+  </article>
+  <article class="card">
+    <h3>Tabs</h3>
+    <p>Dirty-state dots, per-tab scroll and memory.</p>
+    <ul class="mini">
+      <li>Close one / right / others / all</li>
+      <li>Confirmation before discarding changes</li>
+    </ul>
+  </article>
+</div>
 
-<h2>What CMX does not do</h2>
-<p>There is no plugin system that runs arbitrary native code, no built-in terminal multiplexer,
-and no cloud sync — settings are a small file that belongs in your dotfiles repository. The
-<a href="/contributing.html">roadmap</a> records what is being considered and why.</p>
+<h2 id="live-preview">Live preview</h2>
+<p>Press <span class="kbd">⌘⇧V</span> to render the document beside the source,
+split by a resizer you can drag and reset with a double-click.</p>
+<div class="cards">
+  <article class="card">
+    <h3>Markdown</h3>
+    <p>Debounced, GitHub-flavored rendering.</p>
+  </article>
+  <article class="card">
+    <h3>HTML</h3>
+    <p>Rendered in a sandboxed <code>&lt;iframe&gt;</code>, so the document cannot reach
+    the filesystem.</p>
+  </article>
+  <article class="card">
+    <h3>SVG</h3>
+    <p>Previewed in place.</p>
+  </article>
+</div>
 
+<h2 id="status-bar">Status bar</h2>
+<p>Vim mode pill, detected language, <code>Ln</code>/<code>Col</code> that jumps to Go to
+Line and reports the document's total line count, selection size, word-wrap state,
+encoding, and loading and fast-mode indicators.</p>
+
+<h2 id="not-doing">What CMX does not do</h2>
+<div class="cards">
+  <article class="card">
+    <h3>No native-code plugins</h3>
+    <p>CMX renders in the OS webview. Plugins that run arbitrary native code
+    would undercut the reason it ships no browser runtime.</p>
+  </article>
+  <article class="card">
+    <h3>No terminal multiplexer</h3>
+    <p>tmux and the terminal already do this better.</p>
+  </article>
+  <article class="card">
+    <h3>No cloud sync</h3>
+    <p>Settings are a small file. Put it in your dotfiles repository.</p>
+  </article>
+</div>
+<p>The <a href="/contributing.html#roadmap">roadmap</a> records what is being considered
+and why.</p>
+</article><aside class="aside"><nav class="toc" aria-label="On this page"><p class="toc-title">On this page</p><ol><li><a href="#editing">Editing</a></li><li><a href="#large-files">Large files</a></li><li><a href="#vim-mode">Vim mode</a></li><li><a href="#navigation">Navigation</a></li><li><a href="#live-preview">Live preview</a></li><li><a href="#status-bar">Status bar</a></li><li><a href="#not-doing">What CMX does not do</a></li></ol></nav></aside></div>
   </div>
 </main>
 <footer class="site">

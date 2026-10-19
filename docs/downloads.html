@@ -39,13 +39,12 @@
 <main id="main">
   <div class="wrap">
 <ol class="crumbs"><li><a href="/downloads.html">Download</a></li></ol>
-<h1>Download</h1>
-
+<div class="layout"><article><h1>Download</h1>
 <p class="lede">Latest stable release: <b>v0.1.0</b>. CMX is free and MIT licensed — there is
 no trial, no account and no telemetry.</p>
 <p><a class="btn btn-p" href="https://github.com/chaitmudunuri/cmx/releases/latest" rel="noopener">Open the latest release on GitHub</a></p>
 
-<h2>Platform support</h2>
+<h2 id="platform-support">Platform support</h2>
 <p>This is the honest state of v0.1.0. A download is listed only where a binary actually
 exists.</p>
 <table>
@@ -74,7 +73,7 @@ launch. Right-click the app and choose <b>Open</b>, or run:
 <br><code>xattr -dr com.apple.quarantine "/Applications/cmx editor.app"</code>
 <br>Code signing and notarization are on the roadmap.</p>
 
-<h2>Linux</h2>
+<h2 id="linux">Linux</h2>
 <p>No <code>.deb</code> or AppImage is published yet, so build from source. Install the
 WebKitGTK toolchain first:</p>
 <pre><code># Debian / Ubuntu
@@ -88,7 +87,7 @@ sudo dnf install webkit2gtk4.1-devel openssl-devel libxdo-devel \
 packages immediately with <code>pnpm tauri build</code>, which writes <code>.deb</code>,
 <code>.rpm</code> and AppImage to <code>src-tauri/target/release/bundle/</code>.</p>
 
-<h2>Windows</h2>
+<h2 id="windows">Windows</h2>
 <p>No installer is published yet, so build from source. You need
 <a href="https://rustup.rs">Rust</a>, Node 20+ and the
 <a href="https://developer.microsoft.com/microsoft-edge/webview2/">WebView2 runtime</a>, which is
@@ -99,17 +98,17 @@ corepack enable
 pnpm install
 pnpm tauri dev</code></pre>
 
-<h2>Verify what you downloaded</h2>
+<h2 id="verify-what-you-downloaded">Verify what you downloaded</h2>
 <p>Every published release includes a <code>CHECKSUMS.txt</code>:</p>
 <pre><code>sha256sum -c CHECKSUMS.txt</code></pre>
 <p>If a checksum does not match, do not run the file —
 <a href="https://github.com/chaitmudunuri/cmx/issues/new/choose" rel="noopener">report it</a>.</p>
 
-<h2>Other systems</h2>
+<h2 id="other-systems">Other systems</h2>
 <p>Package managers such as Homebrew, Scoop and the AUR are not yet publishing CMX. Please do not
 add unofficial packages on the project's behalf — open an issue and we will help scope an
 official one. The <a href="/docs.html">documentation</a> covers configuration once it is running.</p>
-
+</article><aside class="aside"><nav class="toc" aria-label="On this page"><p class="toc-title">On this page</p><ol><li><a href="#platform-support">Platform support</a></li><li><a href="#macos">macOS — Apple Silicon</a></li><li><a href="#linux">Linux</a></li><li><a href="#windows">Windows</a></li><li><a href="#verify-what-you-downloaded">Verify what you downloaded</a></li><li><a href="#other-systems">Other systems</a></li></ol></nav></aside></div>
   </div>
 </main>
 <footer class="site">

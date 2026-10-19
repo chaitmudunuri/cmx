@@ -39,12 +39,11 @@
 <main id="main">
   <div class="wrap">
 <ol class="crumbs"><li><a href="/performance.html">Performance</a></li></ol>
-<h1>Performance</h1>
-
+<div class="layout"><article><h1>Performance</h1>
 <p class="lede">CMX publishes its benchmark harness in the repository so these numbers can be
 checked, and anyone can reproduce them on their own machine.</p>
 
-<h2>Reference results</h2>
+<h2 id="reference-results">Reference results</h2>
 <table>
 <thead><tr><th>Metric</th><th>Value</th></tr></thead>
 <tbody>
@@ -58,7 +57,7 @@ checked, and anyone can reproduce them on their own machine.</p>
 </table>
 <p>Reported as medians over five runs.</p>
 
-<h2>Artifact sizes</h2>
+<h2 id="artifact-sizes">Artifact sizes</h2>
 <table>
 <thead><tr><th>Artifact</th><th>Size</th></tr></thead>
 <tbody>
@@ -70,7 +69,7 @@ checked, and anyone can reproduce them on their own machine.</p>
 </table>
 <p>There is no bundled Chromium in any of these numbers, because there is no bundled browser.</p>
 
-<h2>Test hardware</h2>
+<h2 id="test-hardware">Test hardware</h2>
 <table>
 <thead><tr><th>Property</th><th>Value</th></tr></thead>
 <tbody>
@@ -104,7 +103,7 @@ via <code>ps</code>, so it runs on macOS and Linux but not Windows. Total physic
 from <code>sysctl hw.memsize</code>, which is macOS-only; elsewhere the comparison falls back to an
 assumed 8&nbsp;GB. Treat the percentage-of-RAM figure as a macOS result.</p>
 
-<h2>Reproduce</h2>
+<h2 id="reproduce">Reproduce</h2>
 <pre><code>pnpm tauri build     # build the release binary first
 pnpm bench --runs 5  # profile it</code></pre>
 <table>
@@ -118,7 +117,7 @@ pnpm bench --runs 5  # profile it</code></pre>
 <p>Numbers for a different machine, a different build or a different OS will differ — that is the
 point. Please <a href="https://github.com/chaitmudunuri/cmx/issues/new/choose">open an issue</a> with your
 <code>__CMX_BENCH__</code> output if you see something surprising.</p>
-
+</article><aside class="aside"><nav class="toc" aria-label="On this page"><p class="toc-title">On this page</p><ol><li><a href="#reference-results">Reference results</a></li><li><a href="#artifact-sizes">Artifact sizes</a></li><li><a href="#test-hardware">Test hardware</a></li><li><a href="#methodology">Methodology</a></li><li><a href="#reproduce">Reproduce</a></li></ol></nav></aside></div>
   </div>
 </main>
 <footer class="site">

@@ -39,13 +39,12 @@
 <main id="main">
   <div class="wrap">
 <ol class="crumbs"><li><a href="/docs.html">Docs</a></li><li><a href="/docs/troubleshooting.html">Troubleshooting</a></li></ol>
-<h1>Troubleshooting</h1>
-
+<div class="layout"><article><h1>Troubleshooting</h1>
 <p class="lede">The problems people actually hit, and what to do about them. If yours is not
 here, <a href="https://github.com/chaitmudunuri/cmx/issues/new/choose" rel="noopener">open an issue</a> — Linux and Windows
 reports are especially welcome, since neither platform has a prebuilt binary yet.</p>
 
-<h2>macOS</h2>
+<h2 id="macos">macOS</h2>
 <h3>"CMX is damaged and can't be opened"</h3>
 <p>Gatekeeper is blocking an unsigned build. Right-click the app and choose <b>Open</b>, or:</p>
 <pre><code>xattr -dr com.apple.quarantine "/Applications/cmx editor.app"</code></pre>
@@ -56,7 +55,7 @@ survive.</p>
 <h3>The app is slow to start on first launch</h3>
 <p>macOS Gatekeeper checks the unsigned binary on first launch only. Subsequent launches skip it.</p>
 
-<h2>Linux</h2>
+<h2 id="linux">Linux</h2>
 <h3><code>libwebkit2gtk-4.1.so.0: cannot open shared object file</code></h3>
 <p>WebKitGTK 4.1 is missing or too old. Install the development packages — see
 <a href="/docs/installation.html#linux">Linux installation</a>.</p>
@@ -64,7 +63,7 @@ survive.</p>
 <p>Check that the appindicator and librsvg libraries are present; some minimal desktop images omit
 them. Also confirm the session is not running Wayland without a working WebKitGTK portal.</p>
 
-<h2>Windows</h2>
+<h2 id="windows">Windows</h2>
 <h3>The window never appears</h3>
 <p>The WebView2 runtime is missing or broken. Install the
 <a href="https://developer.microsoft.com/microsoft-edge/webview2/">Evergreen runtime</a> and
@@ -73,7 +72,7 @@ relaunch.</p>
 <p>Install the Visual Studio Build Tools with the <b>Desktop development with C++</b> workload, then
 restart the shell so the toolchain is on <code>PATH</code>.</p>
 
-<h2>Any platform</h2>
+<h2 id="any-platform">Any platform</h2>
 <h3>Large file opened slowly, or shows a FAST badge</h3>
 <p>This is working as designed. Files over 1.5&nbsp;MB or 25,000 lines drop into fast mode with
 parsing off. See <a href="/features.html#large-files">large files</a>.</p>
@@ -87,11 +86,11 @@ gracefully; a mis-encoded file may need re-saving as UTF-8 in another tool.</p>
 <p>Unsaved changes prompt for confirmation. <code>Esc</code> dismisses dialogs and never cancels
 your typing, so it will not discard a buffer for you.</p>
 
-<h2>Reporting a bug</h2>
+<h2 id="reporting-a-bug">Reporting a bug</h2>
 <p>Include your CMX version, OS and architecture, what you expected, what happened, and minimal
 reproduction steps. Logs from the developer console help. Use the
 <a href="https://github.com/chaitmudunuri/cmx/issues/new/choose" rel="noopener">bug report template</a>.</p>
-
+</article><aside class="aside"><nav class="toc" aria-label="On this page"><p class="toc-title">On this page</p><ol><li><a href="#macos">macOS</a></li><li><a href="#linux">Linux</a></li><li><a href="#windows">Windows</a></li><li><a href="#any-platform">Any platform</a></li><li><a href="#reporting-a-bug">Reporting a bug</a></li></ol></nav></aside></div>
   </div>
 </main>
 <footer class="site">

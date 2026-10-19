@@ -66,6 +66,9 @@ DOCS_NAV = [
     ("Developer setup", "/docs/development.html"),
 ]
 
+# A contents rail only earns its space with enough sections to navigate.
+MIN_TOC_ENTRIES = 3
+
 BUILD_DATE = datetime.date.today().isoformat()
 
 
@@ -231,6 +234,47 @@ def breadcrumbs_html(trail: list[tuple[str, str]]) -> str:
     return f'<ol class="crumbs">{"".join(parts)}</ol>'
 
 
+def auto_id_headings(body: str) -> str:
+    """Give every <h2> a stable id so the on-page contents list is complete.
+
+    Hand-authored ids win; anything missing is derived from the heading text.
+    """
+    seen: set[str] = set()
+
+    def repl(m: re.Match) -> str:
+        frag, inner = m.group(1), m.group(2)
+        if frag:
+            seen.add(frag)
+            return m.group(0)
+        base = slug(html.unescape(re.sub(r"<[^>]+>", "", inner)).strip())
+        frag, n = base, 2
+        while frag in seen:
+            frag = f"{base}-{n}"
+            n += 1
+        seen.add(frag)
+        return f'<h2 id="{frag}">{inner}</h2>'
+
+    return re.sub(r'<h2(?: id="([^"]+)")?>(.*?)</h2>', repl, body, flags=re.S)
+
+
+def slug(text: str) -> str:
+    text = re.sub(r"`([^`]*)`", r"\1", text)
+    text = re.sub(r"<[^>]+>", "", text)
+    text = re.sub(r"[\u0000-\u001f!-,./:;<=>?@\[\\\]^`{|}~]", "", text.lower())
+    return text.strip().replace(" ", "-")
+
+
+def extract_toc(body: str) -> list[tuple[str, str]]:
+    """Build the on-page contents list from h2s that carry an explicit id.
+
+    Deriving it from the body keeps navigation and content from drifting apart.
+    """
+    out = []
+    for frag, title in re.findall(r'<h2 id="([^"]+)">(.*?)</h2>', body, re.S):
+        out.append((frag, html.unescape(re.sub(r"<[^>]+>", "", title)).strip()))
+    return out
+
+
 def page(*, path: str, title: str, description: str, h1: str, body: str,
          og_type: str = "website", trail: list[tuple[str, str]] | None = None,
          extra_schema: list[dict] | None = None) -> tuple[str, str]:
@@ -241,6 +285,19 @@ def page(*, path: str, title: str, description: str, h1: str, body: str,
     schemas.append(software_schema())
 
     crumb_html = breadcrumbs_html(trail) if trail else ""
+    h1_html = f"<h1>{h1}</h1>" if h1 else ""
+
+    body = auto_id_headings(body)
+    toc = extract_toc(body)
+    if len(toc) >= MIN_TOC_ENTRIES:
+        items = "".join(f'<li><a href="#{f}">{html.escape(t)}</a></li>' for f, t in toc)
+        aside = (f'<aside class="aside"><nav class="toc" aria-label="On this page">'
+                 f'<p class="toc-title">On this page</p><ol>{items}</ol>'
+                 f'</nav></aside>')
+        content = (f'<div class="layout"><article>{h1_html}{body}</article>'
+                   f'{aside}</div>')
+    else:
+        content = f"<article>{h1_html}{body}</article>"
 
     doc = f"""{head(title, description, canonical, og_type, schemas)}
 <body>
@@ -253,8 +310,7 @@ def page(*, path: str, title: str, description: str, h1: str, body: str,
 <main id="main">
   <div class="wrap">
 {crumb_html}
-{f'<h1>{h1}</h1>' if h1 else ''}
-{body}
+{content}
   </div>
 </main>
 <footer class="site">
@@ -290,127 +346,314 @@ def link(slug: str) -> str:
 # Stylesheet
 # ---------------------------------------------------------------------------
 
-CSS = """
+CSS = r"""
+/* ------------------------------------------------------------------ *
+ * CMX website stylesheet.
+ * Light and dark are both first-class. The OS preference wins; CMX is a
+ * developer product but the site is read in daylight as often as at night.
+ * ------------------------------------------------------------------ */
+
 :root{
-  --bg:#141416; --panel:#1f1f23; --panel-2:#242428; --border:#2f2f33;
-  --text:#e4e4e7; --muted:#a1a1aa; --faint:#71717a;
-  --accent:#0969da; --accent-alt:#21cee8; --ok:#3fb950;
+  color-scheme: light dark;
+
+  --bg:#ffffff;
+  --surface:#f6f8fa;
+  --surface-2:#eef1f4;
+  --border:#d8dee4;
+  --border-strong:#b9c1ca;
+  --text:#1f2328;
+  --text-soft:#57606a;
+  --text-faint:#818b98;
+  --accent:#0969da;
+  --accent-soft:#ddf4ff;
+  --accent-text:#0550ae;
+  --accent-2:#1a7f37;
+  --code-bg:#eff1f3;
+  --shadow:0 1px 3px rgba(31,35,40,.08), 0 8px 24px rgba(31,35,40,.06);
+  --shadow-lg:0 2px 6px rgba(31,35,40,.10), 0 16px 40px rgba(31,35,40,.10);
+  --ring:#0969da33;
+  --accent-wash:9,105,218;
+  --radius:12px;
 }
-*{box-sizing:border-box}
-html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0d1117;
+    --surface:#161b22;
+    --surface-2:#1c2330;
+    --border:#30363d;
+    --border-strong:#4a5560;
+    --text:#e6edf3;
+    --text-soft:#a8b3bf;
+    --text-faint:#7d8792;
+    --accent:#4493f8;
+    --accent-soft:#121d2f;
+    --accent-text:#6cb6ff;
+    --accent-2:#3fb950;
+    --code-bg:#1b2028;
+    --shadow:0 1px 3px rgba(1,4,9,.5), 0 8px 24px rgba(1,4,9,.4);
+    --shadow-lg:0 2px 8px rgba(1,4,9,.6), 0 18px 44px rgba(1,4,9,.5);
+    --ring:#4493f855;
+    --accent-wash:68,147,248;
+  }
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;scroll-padding-top:84px}
 body{
-  margin:0;background:var(--bg);color:var(--text);
-  font:16px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font:17px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
   -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
 }
-.wrap{max-width:1000px;margin:0 auto;padding:0 24px}
-a{color:var(--accent-alt);text-decoration:none}
+.wrap{max-width:1120px;margin:0 auto;padding:0 28px}
+
+a{color:var(--accent-text);text-decoration:none;text-underline-offset:3px}
 a:hover{text-decoration:underline}
-:focus-visible{outline:2px solid var(--accent-alt);outline-offset:3px;border-radius:4px}
-h1,h2,h3{line-height:1.2;letter-spacing:-.02em;margin-top:0}
-h1{font-size:clamp(30px,5vw,42px);margin-bottom:12px}
-h2{font-size:26px;margin:48px 0 10px;padding-top:8px}
-h3{font-size:18px;margin:28px 0 8px}
-p{margin:0 0 16px}
-.lede{color:var(--muted);font-size:18px;max-width:70ch}
-code{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,monospace;font-size:.88em;
-  background:var(--panel-2);border:1px solid var(--border);border-radius:5px;padding:.12em .38em}
-pre{background:var(--panel);border:1px solid var(--border);border-radius:10px;
-  padding:16px 18px;overflow:auto}
-pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.6}
-table{width:100%;border-collapse:collapse;margin:8px 0 24px;font-size:15px}
-th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:top}
-th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
-tbody tr:last-child td{border-bottom:0}
-td.y{color:var(--ok);white-space:nowrap}
-td.n{color:var(--faint);white-space:nowrap}
+:focus-visible{outline:3px solid var(--ring);outline-offset:2px;border-radius:6px}
 
-/* header */
-.site{background:rgba(20,20,22,.9);border-bottom:1px solid var(--border);
-  position:sticky;top:0;z-index:20;backdrop-filter:blur(12px)}
-.bar{display:flex;align-items:center;justify-content:space-between;gap:20px;height:62px}
-.brand{font-size:21px;font-weight:800;letter-spacing:-.03em;color:var(--text)}
+/* --- type --------------------------------------------------------- */
+h1,h2,h3,h4{line-height:1.18;letter-spacing:-.022em;margin:0}
+h1{font-size:clamp(32px,4.6vw,46px);font-weight:800;margin-bottom:14px;letter-spacing:-.03em}
+h2{font-size:clamp(22px,2.5vw,27px);font-weight:700;margin:60px 0 6px;letter-spacing:-.025em}
+h3{font-size:19px;font-weight:650;margin:38px 0 6px}
+p{margin:0 0 18px}
+.lede{font-size:19px;line-height:1.65;color:var(--text-soft);max-width:62ch}
+main > .wrap > p,
+main > .wrap > ul,
+main > .wrap > ol,
+main > .wrap > pre,
+main > .wrap > blockquote{max-width:74ch}
+main ul,main ol{padding-left:24px}
+main li{margin:.4em 0}
+main li::marker{color:var(--text-faint)}
+
+code{
+  font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+  font-size:.87em;background:var(--code-bg);border:1px solid var(--border);
+  border-radius:6px;padding:.14em .42em;
+  /* Long tokens must be able to break on narrow screens; short ones like
+     :w or the shortcut glyphs contain no break opportunities anyway. */
+  overflow-wrap:anywhere;
+}
+pre{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:18px 20px;overflow-x:auto;margin:0 0 20px;box-shadow:var(--shadow);
+}
+pre code{background:none;border:0;padding:0;white-space:pre;font-size:13.5px;line-height:1.65}
+
+table{
+  width:100%;border-collapse:separate;border-spacing:0;margin:6px 0 26px;
+  font-size:15.5px;border:1px solid var(--border);border-radius:var(--radius);
+  overflow:hidden;background:var(--bg);
+}
+th,td{text-align:left;padding:13px 18px;vertical-align:top}
+thead th{
+  background:var(--surface);color:var(--text-soft);font-weight:650;font-size:12.5px;
+  text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border);
+}
+tbody tr + tr td{border-top:1px solid var(--border)}
+td.y{color:var(--accent-2);font-weight:600;white-space:nowrap}
+td.n{color:var(--text-faint);white-space:nowrap}
+
+.badge{
+  display:inline-block;font-size:11.5px;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;padding:2px 9px;border-radius:999px;
+  background:var(--accent-soft);color:var(--accent-text);border:1px solid var(--border);
+}
+.badge.fast{background:var(--code-bg);color:var(--text-soft)}
+
+/* --- header ------------------------------------------------------- */
+.site{
+  background:color-mix(in srgb, var(--bg) 88%, transparent);
+  border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:30;backdrop-filter:blur(12px) saturate(1.4);
+}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:24px;height:66px}
+.brand{
+  font-size:21px;font-weight:800;letter-spacing:-.035em;color:var(--text);
+  display:inline-flex;align-items:center;gap:9px;
+}
+.brand::before{
+  content:"";width:11px;height:11px;border-radius:3px;
+  background:linear-gradient(135deg,var(--accent),#21cee8);
+}
 .brand:hover{text-decoration:none}
-.site nav{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
-.site nav a{padding:7px 11px;border-radius:7px;color:var(--muted);font-size:15px;font-weight:500}
-.site nav a:hover{background:var(--panel);color:var(--text);text-decoration:none}
-.site nav a.on{color:var(--text);background:var(--panel)}
-.site nav a.gh{background:var(--accent);color:#fff}
-.site nav a.gh:hover{background:#0a7ae8;color:#fff}
+.site nav{display:flex;align-items:center;gap:2px}
+.site nav a{
+  padding:8px 13px;border-radius:8px;color:var(--text-soft);
+  font-size:15px;font-weight:550;white-space:nowrap;
+}
+.site nav a:hover{background:var(--surface);color:var(--text);text-decoration:none}
+.site nav a.on{color:var(--text);background:var(--surface-2);font-weight:650}
+.site nav a.gh{
+  background:var(--text);color:var(--bg);margin-left:8px;font-weight:650;
+  border:1px solid var(--text);
+}
+.site nav a.gh:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
 .has-sub{position:relative}
-.has-sub .sub{display:none;position:absolute;top:100%;left:0;min-width:230px;
-  background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:6px;
-  box-shadow:0 12px 32px rgba(0,0,0,.5)}
+.has-sub .sub{
+  display:none;position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%);
+  min-width:250px;background:var(--bg);border:1px solid var(--border);
+  border-radius:12px;padding:7px;box-shadow:var(--shadow-lg);
+}
 .has-sub:hover .sub,.has-sub:focus-within .sub{display:block}
-.has-sub .sub a{display:block;padding:8px 11px}
+.has-sub .sub a{display:block;padding:9px 13px;color:var(--text-soft)}
+.has-sub .sub a:hover{background:var(--surface);color:var(--text)}
 
-/* hero */
-.hero{position:relative;overflow:hidden;padding:76px 0 46px}
-.hero::before{content:"";position:absolute;inset:-45% -20% auto -20%;height:560px;
-  background:radial-gradient(ellipse at 60% 45%,rgba(9,105,218,.30),transparent 62%);
-  filter:blur(30px);pointer-events:none}
+/* --- hero --------------------------------------------------------- */
+.hero{position:relative;padding:88px 0 60px}
 .hero .wrap{position:relative}
-.logo{font-size:clamp(52px,10vw,82px);font-weight:800;letter-spacing:-.045em;margin:0}
-.rule{display:flex;gap:8px;margin:16px 0 24px}
-.rule i{display:block;height:7px;border-radius:4px}
-.rule i:nth-child(1){width:64px;background:var(--accent)}
-.rule i:nth-child(2){width:40px;background:var(--accent-alt)}
-.tagline{font-size:clamp(19px,2.6vw,23px);font-weight:600;margin:0 0 10px;max-width:30ch}
-.sub{color:var(--muted);margin:0 0 8px}
-.platforms{color:var(--faint);font-size:15px;margin:0}
+.logo{
+  font-size:clamp(50px,9vw,78px);font-weight:800;letter-spacing:-.045em;margin:0;
+  background:linear-gradient(180deg,var(--text),color-mix(in srgb,var(--text) 78%,var(--accent)));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.rule{display:flex;gap:9px;margin:20px 0 30px}
+.rule i{display:block;height:6px;border-radius:999px}
+.rule i:nth-child(1){width:70px;background:var(--accent)}
+.rule i:nth-child(2){width:44px;background:#21cee8}
+.tagline{font-size:clamp(21px,2.9vw,27px);font-weight:680;margin:0 0 14px;max-width:31ch;letter-spacing:-.02em;line-height:1.3}
+.sub{color:var(--text-soft);font-size:18px;margin:0;max-width:58ch}
 
-.cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}
-.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border-radius:9px;
-  font-weight:600;font-size:15px;border:1px solid transparent;transition:.15s}
+.cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:34px}
+.btn{
+  display:inline-flex;align-items:center;gap:8px;padding:13px 24px;border-radius:10px;
+  font-weight:650;font-size:15.5px;border:1px solid var(--border);
+  transition:transform .12s ease,box-shadow .12s ease,background .12s ease;
+}
 .btn:hover{text-decoration:none;transform:translateY(-1px)}
-.btn-p{background:var(--accent);color:#fff}
-.btn-p:hover{background:#0a7ae8}
-.btn-s{background:var(--panel);color:var(--text);border-color:var(--border)}
-.btn-s:hover{background:var(--panel-2)}
+.btn-p{background:var(--accent);color:#fff;border-color:transparent;box-shadow:var(--shadow)}
+.btn-p:hover{background:color-mix(in srgb,var(--accent) 88%,black)}
+.btn-s{background:var(--bg);color:var(--text)}
+.btn-s:hover{background:var(--surface);box-shadow:var(--shadow)}
 
-main{padding:34px 0 24px;min-height:60vh}
-.shot{width:100%;border:1px solid var(--border);border-radius:12px;display:block}
-figure{margin:0 0 8px}
-figcaption{color:var(--muted);font-size:15px}
-figcaption b{color:var(--text)}
-.crumbs{list-style:none;display:flex;flex-wrap:wrap;gap:8px;padding:0;margin:0 0 22px;
-  font-size:14px;color:var(--faint)}
-.crumbs li+li::before{content:"/";margin-right:8px;color:var(--border)}
-.crumbs a{color:var(--faint)}
+/* --- page body ---------------------------------------------------- */
+main{padding:44px 0 20px;min-height:60vh}
+.crumbs{
+  list-style:none;display:flex;flex-wrap:wrap;gap:8px;padding:0;margin:0 0 26px;
+  font-size:14px;color:var(--text-faint);
+}
+.crumbs li+li::before{content:"/";margin-right:8px;color:var(--border-strong)}
+.crumbs a{color:var(--text-faint)}
 .crumbs a:hover{color:var(--text)}
 
-/* cards */
-.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));margin:8px 0 8px}
-.card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:20px}
-.card h3{margin:0 0 7px;font-size:17px}
-.card p{margin:0;color:var(--muted);font-size:15px}
-.card a.stretch{color:inherit}
-.card a.stretch:hover{text-decoration:none}
-.card a.stretch:hover h3{color:var(--accent-alt)}
+.shot{width:100%;border:1px solid var(--border);border-radius:var(--radius);display:block;box-shadow:var(--shadow-lg)}
+figure{margin:0 0 10px}
+figcaption{color:var(--text-soft);font-size:15.5px;margin-top:10px}
+figcaption b{color:var(--text)}
 
-.note{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--accent);
-  border-radius:8px;padding:15px 19px;color:var(--muted);font-size:15px;margin:0 0 22px}
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(258px,1fr));margin:10px 0 8px;align-items:start}
+.card{
+  background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);
+  padding:22px 24px;box-shadow:var(--shadow);
+  transition:transform .12s ease,box-shadow .12s ease,border-color .12s ease;
+}
+.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg);border-color:var(--border-strong)}
+.card h3{margin:0 0 8px;font-size:18px;font-weight:650}
+.card p{margin:0;color:var(--text-soft);font-size:15.5px;line-height:1.62}
+a.stretch{color:inherit;display:block}
+a.stretch:hover{text-decoration:none}
+a.stretch:hover h3{color:var(--accent-text)}
+
+.note{
+  background:var(--surface);border:1px solid var(--border);
+  border-left:3px solid var(--accent);border-radius:10px;
+  padding:16px 20px;color:var(--text-soft);font-size:15.5px;margin:0 0 24px;
+}
 .note b,.note strong{color:var(--text)}
-.note.ok{border-left-color:var(--ok)}
-.pill{display:inline-block;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;
-  padding:3px 9px;border-radius:20px;border:1px solid var(--border);color:var(--faint)}
-.pill.now{color:var(--ok);border-color:rgba(63,185,80,.4)}
-.pill.next{color:var(--accent-alt);border-color:rgba(33,206,232,.35)}
-.tags{display:flex;flex-wrap:wrap;gap:7px;margin:14px 0 4px;padding:0;list-style:none}
-.tags li{font-size:13px;color:var(--muted);background:var(--panel-2);
-  border:1px solid var(--border);border-radius:6px;padding:3px 9px}
+.note.ok{border-left-color:var(--accent-2)}
 
-footer.site{border-top:1px solid var(--border);background:none;position:static;margin-top:56px}
-.foot{padding:34px 0 46px;display:flex;flex-wrap:wrap;gap:20px;justify-content:space-between;align-items:flex-start}
-.foot p{margin:0;color:var(--muted);font-size:15px;max-width:60ch}
-.foot nav{display:flex;flex-wrap:wrap;gap:16px}
-.foot nav a{color:var(--muted);font-size:15px}
+.tags{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 6px;padding:0;list-style:none}
+.tags li{
+  font-size:14px;color:var(--text-soft);background:var(--surface);
+  border:1px solid var(--border);border-radius:999px;padding:4px 13px;
+}
 
-@media(max-width:720px){
-  .bar{height:auto;padding:12px 0;flex-wrap:wrap}
-  .site nav{gap:2px}
-  .hero{padding:48px 0 32px}
-  h2{margin-top:38px}
+/* --- footer ------------------------------------------------------- */
+footer.site{border-top:1px solid var(--border);background:var(--surface);position:static;margin-top:70px}
+.foot{padding:40px 0 52px;display:flex;flex-wrap:wrap;gap:24px;justify-content:space-between;align-items:flex-start}
+.foot p{margin:0;color:var(--text-soft);font-size:15.5px;max-width:62ch}
+.foot nav{display:flex;flex-wrap:wrap;gap:8px}
+.foot nav a{color:var(--text-soft);font-size:15.5px;padding:6px 10px;border-radius:8px}
+.foot nav a:hover{background:var(--bg);color:var(--text);text-decoration:none}
+
+
+/* --- two-column reading layout ------------------------------------ */
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 236px;gap:56px;align-items:start}
+.layout > article{min-width:0}
+.aside{position:sticky;top:92px}
+.toc{border-left:2px solid var(--border);padding-left:18px}
+.toc-title{
+  font-size:12px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--text-faint);margin:0 0 12px;
+}
+.toc ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px}
+.toc a{color:var(--text-soft);font-size:14.5px;line-height:1.45;display:block}
+.toc a:hover{color:var(--accent-text);text-decoration:none}
+article > *{max-width:74ch}
+article > .cards,article > table,article > figure,article > .note,article > ul.tags{width:100%;max-width:none}
+article > .hero{
+  width:100%;max-width:none;
+  /* full-bleed: the wash then fades against the viewport edge, so it has no
+     visible inner boundary where the content column happens to end */
+  margin-left:calc(50% - 50vw);margin-right:calc(50% - 50vw);
+}
+figure.wide{margin:0 0 8px}
+figure.wide .shot{width:100%}
+
+/* --- scannable card groups ---------------------------------------- */
+.cards{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(272px,1fr));margin:14px 0 8px;align-items:start}
+.cards .card{display:flex;flex-direction:column}
+.cards .card h3{margin-top:0}
+.cards .card p{margin:0}
+.mini{list-style:none;padding:0;margin:12px 0 0;font-size:14.5px;color:var(--text-soft);display:flex;flex-direction:column;gap:6px}
+.mini li{display:flex;gap:9px;align-items:flex-start;line-height:1.5}
+.mini li::before{
+  content:"";flex:none;width:5px;height:5px;border-radius:50%;
+  background:var(--accent);margin-top:.62em;
+}
+.kbd{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:26px;height:24px;padding:0 7px;margin:0 1px;
+  font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,monospace;
+  font-size:12.5px;font-weight:600;color:var(--text);
+  background:var(--surface);border:1px solid var(--border-strong);
+  border-bottom-width:2px;border-radius:6px;
+}
+.exgrid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin:14px 0 8px;list-style:none;padding:0}
+.exgrid li{
+  background:var(--surface);border:1px solid var(--border);border-radius:8px;
+  padding:10px 14px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  font-size:14px;color:var(--text);text-align:center;
+}
+.exgrid li span{display:block;font-family:inherit;font-size:13px;color:var(--text-soft);margin-top:3px}
+
+@media(max-width:960px){
+  .layout{grid-template-columns:minmax(0,1fr);gap:0}
+  .aside{position:static;margin:8px 0 0;order:-1}
+  .toc{border-left:0;border:1px solid var(--border);border-radius:10px;padding:14px 18px;background:var(--surface)}
+  .toc ol{flex-direction:row;flex-wrap:wrap;gap:6px 18px}
+  .toc a{font-size:14px}
+}
+
+@media(max-width:760px){
+  .wrap{padding:0 20px}
+  .bar{height:auto;padding:14px 0;flex-wrap:wrap;gap:12px}
+  .site nav{gap:2px;flex-wrap:wrap;justify-content:flex-end}
+  .site nav a{padding:7px 10px;font-size:14.5px}
+  .site nav a.gh{margin-left:0}
+  .has-sub .sub{display:none}
+  .hero{padding:56px 0 40px}
+  h2{margin-top:46px}
+  table{font-size:14.5px}
+  th,td{padding:11px 13px}
+}
+@media print{
+  .site,footer.site{display:none}
+  body{background:#fff;color:#000}
 }
 """
 
@@ -437,9 +680,9 @@ def p_hero():
   </div>
 </section>
 
-<p><a href="{REPO_URL}"><img class="shot"
+<figure class="wide"><a href="{REPO_URL}"><img class="shot"
   src="/screenshots/01-workspace-dark.png" width="1380" height="723" loading="lazy"
-  alt="CMX code editor showing a dark-theme workspace with the file explorer open and syntax-highlighted TypeScript."></a></p>
+  alt="CMX code editor showing a dark-theme workspace with the file explorer open and syntax-highlighted TypeScript."></a></figure>
 """
 
 
@@ -500,87 +743,177 @@ release milestone.</p>
 
 def p_features():
     body = """
-<p class="lede">Everything CMX does, and what it deliberately leaves out. Measurements are on
-the <a href="/performance.html">performance page</a>.</p>
+<p class="lede">Everything CMX does — and, at the end, what it deliberately leaves out.
+Figures are on the <a href="/performance.html">performance page</a>.</p>
 
-<h2>Editing</h2>
-<ul>
-<li><b>CodeMirror 6 core.</b> Multiple cursors, bracket matching and closing, folding, a
-  search-and-replace panel, highlighted selection matches and an active-line marker.</li>
-<li><b>14 language grammars, loaded on demand.</b> JavaScript/TypeScript, Python, Rust,
-  C/C++, Java, Go (via the C++ grammar), HTML, CSS, JSON, Markdown, SQL, XML, YAML, Shell and
-  Dockerfile. Opening a Rust file never waits on the Python grammar.</li>
-<li><b>Markdown with highlighted fenced code blocks</b> — headings, emphasis, code, quotes,
-  lists and links.</li>
-<li><b>Tab size</b> 2, 4 or 8; <b>word wrap</b>; zoom in, out and reset; six bundled monospace
-  fonts. See <a href="/docs/configuration.html">configuration</a>.</li>
-</ul>
+<h2 id="editing">Editing</h2>
+<div class="cards">
+  <article class="card">
+    <h3>CodeMirror 6 core</h3>
+    <p>The mature editing engine, not a reimplementation.</p>
+    <ul class="mini">
+      <li>Multiple cursors</li>
+      <li>Bracket matching and closing</li>
+      <li>Code folding</li>
+      <li>Search-and-replace panel</li>
+      <li>Highlighted selection matches</li>
+    </ul>
+  </article>
+  <article class="card">
+    <h3>14 grammars, on demand</h3>
+    <p>Language packs load when a file needs them. Opening a Rust file never
+    waits on the Python grammar.</p>
+    <ul class="tags">
+      <li>JS/TS</li><li>Python</li><li>Rust</li><li>C/C++</li><li>Java</li><li>Go</li>
+      <li>HTML</li><li>CSS</li><li>JSON</li><li>Markdown</li><li>SQL</li>
+      <li>XML</li><li>YAML</li><li>Shell</li><li>Dockerfile</li>
+    </ul>
+  </article>
+  <article class="card">
+    <h3>Markdown, properly</h3>
+    <p>Headings, emphasis, code, quotes, lists and links — with fenced code blocks
+    syntax-highlighted rather than dumped as plain text.</p>
+  </article>
+  <article class="card">
+    <h3>Comfortable defaults</h3>
+    <p>The small things you notice after an hour.</p>
+    <ul class="mini">
+      <li>Tab size 2, 4 or 8</li>
+      <li>Word wrap</li>
+      <li>Zoom in / out / reset</li>
+      <li>Six bundled monospace fonts</li>
+    </ul>
+  </article>
+</div>
+<p><a href="/docs/configuration.html">Configuration →</a></p>
 
 <h2 id="large-files">Large files</h2>
-<p>Files over <b>1.5&nbsp;MB</b> or <b>25,000 lines</b> automatically drop into fast mode:
-parsing and decorative extras switch off so scrolling and editing stay smooth, and a
-<code>⚡&nbsp;FAST</code> badge appears in the status bar so you always know which mode you are in.
-Reopening a file above the threshold always starts in fast mode.</p>
+<p>Files past <b>1.5&nbsp;MB</b> or <b>25,000 lines</b> drop into fast mode: parsing and
+decorative extras switch off so scrolling and editing stay smooth. A
+<span class="badge fast">FAST</span> badge in the status bar always tells you which mode
+you are in, so it is never a mystery.</p>
 
 <h2 id="vim-mode">Vim mode</h2>
 <p>Three levels, switched from the status-bar pill or the command palette.</p>
-<table>
-<thead><tr><th>Level</th><th>What you get</th></tr></thead>
-<tbody>
-<tr><td>Off <span class="pill">default</span></td><td>A plain editor. Nothing is intercepted.</td></tr>
-<tr><td>Friendly</td><td>Hints plus a forgiving Ex command set.</td></tr>
-<tr><td>Expert</td><td>The full motion vocabulary.</td></tr>
-</tbody>
-</table>
-<p>Ex commands: <code>:w</code> <code>:q</code> <code>:q!</code> <code>:wq</code> <code>:x</code>
-<code>:e</code> <code>:noh</code> <code>:bd</code> <code>:new</code>, alongside a which-key style
-hint bar and a mode pill reading <code>NORMAL</code>, <code>INSERT</code> or <code>VISUAL</code>.</p>
-
-<h2>Navigation</h2>
-<h3>File explorer</h3>
-<p>Create, rename and delete files and folders inline; reveal in Finder or Explorer; open and
-close a folder. The tree patches itself in place, so saving a file does not collapse and
-re-expand the whole sidebar.</p>
-<h3>Quick Open</h3>
-<p>A ranked file finder over the open workspace on <code>⌘P</code>, with filename hits ranked
-ahead of directory hits. The command palette is on <code>⌘⇧P</code> or <code>F1</code>, and
-<code>:line[,col]</code> jumps straight to a position.</p>
-<h3>Workspace search</h3>
-<p><code>⌘⇧F</code> searches every file in the workspace and groups matches by file with two lines
-of surrounding context. Results highlight the matched text and update on a 150&nbsp;ms debounce —
-and when you keep typing, in-flight searches are cancelled rather than queued.</p>
-<p>Search is implemented in Rust on ripgrep's <code>ignore</code> crate. It honours
-<code>.gitignore</code> and global excludes and skips hidden files out of the box, and needs
-<b>no external <code>rg</code> binary installed</b>.</p>
-<h3>Tabs</h3>
-<p>Dirty-state dots, per-tab scroll and memory, close one / right / others / all, and a
-confirmation before discarding unsaved changes.</p>
-
-<h2>Live preview</h2>
-<p><code>⌘⇧V</code> renders the document beside the source, split by a resizer you can drag and
-reset with a double-click.</p>
-<ul>
-<li><b>Markdown</b> — debounced, GitHub-flavored rendering.</li>
-<li><b>HTML</b> — rendered in a sandboxed <code>&lt;iframe&gt;</code>, so the document cannot
-  reach the filesystem.</li>
-<li><b>SVG</b> — previewed in place.</li>
+<div class="cards">
+  <article class="card">
+    <h3>Off <span class="badge">default</span></h3>
+    <p>A plain editor. Nothing is intercepted.</p>
+  </article>
+  <article class="card">
+    <h3>Friendly</h3>
+    <p>Hints plus a forgiving Ex command set.</p>
+  </article>
+  <article class="card">
+    <h3>Expert</h3>
+    <p>The full motion vocabulary.</p>
+  </article>
+</div>
+<p>Ex commands:</p>
+<ul class="exgrid">
+  <li>:w<span>save</span></li>
+  <li>:q<span>close</span></li>
+  <li>:q!<span>close, discard</span></li>
+  <li>:wq<span>save and close</span></li>
+  <li>:x<span>save and close</span></li>
+  <li>:e<span>reload</span></li>
+  <li>:noh<span>clear highlight</span></li>
+  <li>:bd<span>close buffer</span></li>
+  <li>:new<span>new buffer</span></li>
 </ul>
+<p>A which-key style hint bar appears alongside a mode pill reading
+<span class="kbd">NORMAL</span> <span class="kbd">INSERT</span> or
+<span class="kbd">VISUAL</span>.</p>
 
-<h2>Status bar</h3>
-<p>Vim mode pill, detected language, <code>Ln</code>/<code>Col</code> that jumps to Go to Line and
-reports the document's total line count, selection size, word-wrap state, encoding, and loading
-and fast-mode indicators.</p>
+<h2 id="navigation">Navigation</h2>
+<div class="cards">
+  <article class="card">
+    <h3>File explorer</h3>
+    <p>Create, rename and delete files and folders inline; reveal in Finder or
+    Explorer; open and close a folder.</p>
+    <ul class="mini">
+      <li>The tree patches itself in place</li>
+      <li>Saving a file never collapses the sidebar</li>
+    </ul>
+  </article>
+  <article class="card">
+    <h3>Quick Open <span class="kbd">\u2318P</span></h3>
+    <p>A ranked file finder over the open workspace, with filename hits ranked
+    ahead of directory hits.</p>
+    <ul class="mini">
+      <li><span class="kbd">\u2318\u21e7P</span> or <span class="kbd">F1</span> \u2014 command palette</li>
+      <li><code>:line[,col]</code> \u2014 jump to a position</li>
+    </ul>
+  </article>
+  <article class="card">
+    <h3>Workspace search <span class="kbd">\u2318\u21e7F</span></h3>
+    <p>Every file in the workspace, grouped by file with two lines of context and
+    the matched text highlighted.</p>
+    <ul class="mini">
+      <li>150&nbsp;ms debounce</li>
+      <li>In-flight searches cancel as you keep typing</li>
+      <li>Honours <code>.gitignore</code> and skips hidden files</li>
+      <li>No external <code>rg</code> binary needed</li>
+    </ul>
+  </article>
+  <article class="card">
+    <h3>Tabs</h3>
+    <p>Dirty-state dots, per-tab scroll and memory.</p>
+    <ul class="mini">
+      <li>Close one / right / others / all</li>
+      <li>Confirmation before discarding changes</li>
+    </ul>
+  </article>
+</div>
 
-<h2>What CMX does not do</h2>
-<p>There is no plugin system that runs arbitrary native code, no built-in terminal multiplexer,
-and no cloud sync — settings are a small file that belongs in your dotfiles repository. The
-<a href="/contributing.html">roadmap</a> records what is being considered and why.</p>
+<h2 id="live-preview">Live preview</h2>
+<p>Press <span class="kbd">\u2318\u21e7V</span> to render the document beside the source,
+split by a resizer you can drag and reset with a double-click.</p>
+<div class="cards">
+  <article class="card">
+    <h3>Markdown</h3>
+    <p>Debounced, GitHub-flavored rendering.</p>
+  </article>
+  <article class="card">
+    <h3>HTML</h3>
+    <p>Rendered in a sandboxed <code>&lt;iframe&gt;</code>, so the document cannot reach
+    the filesystem.</p>
+  </article>
+  <article class="card">
+    <h3>SVG</h3>
+    <p>Previewed in place.</p>
+  </article>
+</div>
+
+<h2 id="status-bar">Status bar</h2>
+<p>Vim mode pill, detected language, <code>Ln</code>/<code>Col</code> that jumps to Go to
+Line and reports the document's total line count, selection size, word-wrap state,
+encoding, and loading and fast-mode indicators.</p>
+
+<h2 id="not-doing">What CMX does not do</h2>
+<div class="cards">
+  <article class="card">
+    <h3>No native-code plugins</h3>
+    <p>CMX renders in the OS webview. Plugins that run arbitrary native code
+    would undercut the reason it ships no browser runtime.</p>
+  </article>
+  <article class="card">
+    <h3>No terminal multiplexer</h3>
+    <p>tmux and the terminal already do this better.</p>
+  </article>
+  <article class="card">
+    <h3>No cloud sync</h3>
+    <p>Settings are a small file. Put it in your dotfiles repository.</p>
+  </article>
+</div>
+<p>The <a href="/contributing.html#roadmap">roadmap</a> records what is being considered
+and why.</p>
 """
     return page(
         path="/features.html",
-        title=f"Features — {NAME} code editor for macOS, Linux and Windows",
-        description="Vim mode with three levels, .gitignore-aware workspace search, Quick Open, "
-                    "large-file fast mode, and live preview for Markdown, HTML and SVG.",
+        title=f"Features \u2014 {NAME} code editor for macOS, Linux and Windows",
+        description="Vim mode with three levels, .gitignore-aware workspace search, Quick "
+                    "Open, large-file fast mode, and live preview for Markdown, HTML and SVG.",
         h1="Features",
         body=body,
         trail=[("Features", "/features.html")],

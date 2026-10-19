@@ -39,12 +39,11 @@
 <main id="main">
   <div class="wrap">
 <ol class="crumbs"><li><a href="/docs.html">Docs</a></li><li><a href="/docs/development.html">Developer setup</a></li></ol>
-<h1>Developer setup</h1>
-
+<div class="layout"><article><h1>Developer setup</h1>
 <p class="lede">Build CMX from source, run the tests, and profile a release build. The repository
 is at <a href="https://github.com/chaitmudunuri/cmx">https://github.com/chaitmudunuri/cmx</a>.</p>
 
-<h2>Prerequisites</h2>
+<h2 id="prerequisites">Prerequisites</h2>
 <ul>
 <li><a href="https://nodejs.org">Node 20+</a> with <a href="https://pnpm.io">pnpm</a></li>
 <li><a href="https://rustup.rs">Rust stable</a> — macOS also needs <code>xcode-select --install</code></li>
@@ -54,7 +53,7 @@ is at <a href="https://github.com/chaitmudunuri/cmx">https://github.com/chaitmud
 <p>The full platform list is maintained by the
 <a href="https://v2.tauri.app/start/prerequisites/">Tauri project</a>.</p>
 
-<h2>Run it</h2>
+<h2 id="run-it">Run it</h2>
 <pre><code>git clone https://github.com/chaitmudunuri/cmx.git
 cd cmx
 pnpm install
@@ -64,7 +63,7 @@ pnpm tauri dev      # Vite + Tauri with hot reload at http://127.0.0.1:1420</cod
 pnpm build         # production frontend bundle
 pnpm tauri build   # full release bundles for this platform</code></pre>
 
-<h2>Checks</h2>
+<h2 id="checks">Checks</h2>
 <pre><code>npx tsc --noEmit                    # frontend typecheck
 pnpm build                           # production build
 cd src-tauri &amp;&amp; cargo test         # Rust unit tests
@@ -72,14 +71,14 @@ cd src-tauri &amp;&amp; cargo clippy -- -D warnings</code></pre>
 <p>CI runs the typecheck, the frontend build and the Rust tests on every push across Linux,
 macOS and Windows.</p>
 
-<h2>Benchmarks</h2>
+<h2 id="benchmarks">Benchmarks</h2>
 <pre><code>pnpm tauri build     # the harness profiles the release binary
 pnpm bench --runs 5</code></pre>
 <p>The harness samples the running binary and prints medians, plus a machine-readable
 <code>__CMX_BENCH__</code> JSON line. Full methodology is on the
 <a href="/performance.html#methodology">performance page</a>.</p>
 
-<h2>Project layout</h2>
+<h2 id="project-layout">Project layout</h2>
 <table>
 <thead><tr><th>Path</th><th>Contents</th></tr></thead>
 <tbody>
@@ -92,11 +91,11 @@ pnpm bench --runs 5</code></pre>
 </tbody>
 </table>
 
-<h2>Contributing</h2>
+<h2 id="contributing">Contributing</h2>
 <p>See <a href="/contributing.html">contributing</a> for the commit style, review expectations
 and code of conduct, or the repository's
 <a href="https://github.com/chaitmudunuri/cmx/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a> directly.</p>
-
+</article><aside class="aside"><nav class="toc" aria-label="On this page"><p class="toc-title">On this page</p><ol><li><a href="#prerequisites">Prerequisites</a></li><li><a href="#run-it">Run it</a></li><li><a href="#checks">Checks</a></li><li><a href="#benchmarks">Benchmarks</a></li><li><a href="#project-layout">Project layout</a></li><li><a href="#contributing">Contributing</a></li></ol></nav></aside></div>
   </div>
 </main>
 <footer class="site">
