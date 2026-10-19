@@ -424,20 +424,34 @@ pub async fn list_dir(path: String) -> Result<Vec<FileEntry>, String> {
         fs::read_dir(dir_path).map_err(|e| format!("Failed to read dir {}: {}", path, e))?;
 
     for entry in read_dir {
-        let entry = entry.map_err(|e| e.to_string())?;
-        let metadata = entry.metadata().map_err(|e| e.to_string())?;
+        let Ok(entry) = entry else {
+            continue;
+        };
         let name = entry.file_name().to_string_lossy().to_string();
 
-        if name.starts_with('.') {
+        // Skip internal OS and VCS noise, but preserve developer dotfiles (.gitignore, .env, .github, etc.)
+        if matches!(name.as_str(), ".git" | ".DS_Store" | "Thumbs.db" | ".Trash") {
             continue;
         }
 
-        if metadata.is_dir()
+        // Determine if directory without failing on broken symlinks
+        let is_dir = if let Ok(ft) = entry.file_type() {
+            if ft.is_dir() {
+                true
+            } else if ft.is_symlink() {
+                fs::metadata(entry.path()).map(|m| m.is_dir()).unwrap_or(false)
+            } else {
+                false
+            }
+        } else {
+            false
+        };
+
+        if is_dir
             && matches!(
                 name.as_str(),
                 "node_modules"
                     | "target"
-                    | ".git"
                     | "dist"
                     | "build"
                     | "__pycache__"
@@ -451,7 +465,7 @@ pub async fn list_dir(path: String) -> Result<Vec<FileEntry>, String> {
         entries.push(FileEntry {
             name,
             path: entry.path().to_string_lossy().to_string(),
-            is_dir: metadata.is_dir(),
+            is_dir,
         });
     }
 
@@ -902,6 +916,33 @@ mod tests {
                 assert!(res.files.iter().any(|f| f.path == "hello.txt" && f.status == "U"));
             }
         }
+        let _ = stdfs::remove_dir_all(&temp);
+    }
+
+    #[test]
+    fn list_dir_includes_dotfiles_and_ignores_vcs() {
+        let temp = std::env::temp_dir().join(format!("cmx-listdir-test-{}", std::process::id()));
+        let _ = stdfs::remove_dir_all(&temp);
+        let _ = stdfs::create_dir_all(&temp);
+
+        stdfs::write(temp.join(".gitignore"), "node_modules").unwrap();
+        stdfs::write(temp.join(".env"), "KEY=VALUE").unwrap();
+        stdfs::write(temp.join("main.rs"), "fn main() {}").unwrap();
+        let _ = stdfs::create_dir_all(temp.join(".git"));
+        let _ = stdfs::create_dir_all(temp.join("src"));
+
+        let entries = tauri::async_runtime::block_on(list_dir(temp.to_string_lossy().to_string())).unwrap();
+        let names: Vec<String> = entries.iter().map(|e| e.name.clone()).collect();
+
+        // Must include developer dotfiles and regular files
+        assert!(names.contains(&".gitignore".to_string()));
+        assert!(names.contains(&".env".to_string()));
+        assert!(names.contains(&"main.rs".to_string()));
+        assert!(names.contains(&"src".to_string()));
+
+        // Must skip .git
+        assert!(!names.contains(&".git".to_string()));
+
         let _ = stdfs::remove_dir_all(&temp);
     }
 }

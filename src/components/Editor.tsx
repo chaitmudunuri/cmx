@@ -20,7 +20,7 @@ import type { Extension } from "@codemirror/state";
 import { vim, Vim, getCM } from "@replit/codemirror-vim";
 import { invoke } from "@tauri-apps/api/core";
 import { editorStore, isBinaryImageFile, type OpenFile } from "../stores/editor";
-import { open, save } from "@tauri-apps/plugin-dialog";
+import { save } from "@tauri-apps/plugin-dialog";
 import { listen } from "@tauri-apps/api/event";
 import ImageViewer from "./ImageViewer";
 
@@ -308,6 +308,8 @@ export default function Editor() {
     togglePreview,
     rootPath,
     loadFolder,
+    openFolderDialog,
+    openFileDialog,
     upsertTreeNode,
     parentDirOf,
     newUntitledFile,
@@ -373,6 +375,7 @@ export default function Editor() {
       keymap.of([
         { key: "Mod-s", run: () => (saveCurrentFile(), true) },
         { key: "Mod-o", run: () => (openFileDialog(), true) },
+        { key: "Mod-Alt-o", run: () => (openFolderDialog(), true) },
         { key: "Mod-p", run: () => (openSearch("files"), true) },
         { key: "Mod-Shift-f", run: () => (openSearch("grep"), true) },
         { key: "Mod-Shift-p", run: () => (openSearch("commands"), true) },
@@ -601,33 +604,6 @@ export default function Editor() {
     }
   }
 
-  async function openFileDialog() {
-    const selected = await open({ multiple: false, directory: false });
-    if (selected && typeof selected === "string") {
-      const name = selected.split(/[\\/]/).pop() ?? selected;
-      if (isBinaryImageFile(name)) {
-        storeOpenFile(selected, name, "");
-        return;
-      }
-      try {
-        setLoadingFilePath(selected);
-        const content = await invoke<string>("read_file", { path: selected });
-        storeOpenFile(selected, name, content);
-      } catch (e) {
-        console.error("Failed to open file:", e);
-      } finally {
-        setLoadingFilePath(null);
-      }
-    }
-  }
-
-  async function openFolderDialog() {
-    const selected = await open({ directory: true, multiple: false });
-    if (selected && typeof selected === "string") {
-      await loadFolder(selected);
-    }
-  }
-
   // ---- Effects ----
 
   onMount(() => {
@@ -668,6 +644,7 @@ export default function Editor() {
     const unlisteners = Promise.all([
       listen("menu-new-file", () => newUntitledFile()),
       listen("menu-open-file", () => openFileDialog()),
+      listen("menu-open-folder", () => openFolderDialog()),
       listen("menu-save-file", () => saveCurrentFile()),
     ]);
     onCleanup(() => void unlisteners.then((fns) => fns.forEach((fn) => fn())));
@@ -913,6 +890,7 @@ export default function Editor() {
                   <i class="codicon codicon-folder-opened" />
                   <span>Open Folder...</span>
                 </span>
+                <kbd class="welcome-kbd">⌘⌥O</kbd>
               </button>
 
               <button class="welcome-action-row" onClick={() => openSearch("grep")}>

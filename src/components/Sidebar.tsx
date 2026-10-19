@@ -1,6 +1,6 @@
 import { createSignal, onCleanup, For, Show } from "solid-js";
 import { invoke } from "@tauri-apps/api/core";
-import { open, confirm } from "@tauri-apps/plugin-dialog";
+import { confirm } from "@tauri-apps/plugin-dialog";
 import { editorStore, type FileNode, isBinaryImageFile } from "../stores/editor";
 import { getFileIcon } from "./FileIcon";
 import SidebarSearch from "./SidebarSearch";
@@ -10,6 +10,7 @@ export default function Sidebar() {
     rootPath,
     fileTree,
     setFileTree,
+    toggleDirectory,
     newUntitledFile,
     createNewFileInFolder,
     createNewDirInFolder,
@@ -26,6 +27,7 @@ export default function Sidebar() {
     getFileGitStatus,
     getDirGitStatus,
     refreshGitStatus,
+    openFolderDialog,
   } = editorStore;
 
   const [isDragging, setIsDragging] = createSignal(false);
@@ -63,13 +65,6 @@ export default function Sidebar() {
   onCleanup(() => {
     document.body.classList.remove("is-resizing");
   });
-
-  async function openFolder() {
-    const selected = await open({ directory: true, multiple: false });
-    if (selected && typeof selected === "string") {
-      await editorStore.loadFolder(selected);
-    }
-  }
 
   function handleStartNewFile(targetDir?: string) {
     if (!rootPath()) {
@@ -246,7 +241,7 @@ export default function Sidebar() {
                 <i class="codicon codicon-close" />
               </button>
             </Show>
-            <button onClick={openFolder} title="Open Folder">
+            <button onClick={openFolderDialog} title="Open Folder (⌘⌥O)">
               <i class="codicon codicon-folder-opened" />
             </button>
           </div>
@@ -296,7 +291,7 @@ export default function Sidebar() {
                 </div>
                 <p class="sidebar-empty-title">No folder open</p>
                 <div class="sidebar-empty-actions">
-                  <button class="btn btn-primary" onClick={openFolder}>
+                  <button class="btn btn-primary" onClick={openFolderDialog}>
                     Open Folder
                   </button>
                   <button class="btn" onClick={() => newUntitledFile()}>
@@ -308,12 +303,10 @@ export default function Sidebar() {
             }
           >
             <For each={fileTree}>
-              {(node, index) => (
+              {(node) => (
                 <TreeNode
                   node={node}
                   depth={0}
-                  parentPath={[]}
-                  index={index()}
                   createTargetDir={createTargetDir}
                   isCreatingFile={isCreatingFile}
                   isCreatingDir={isCreatingDir}
@@ -345,8 +338,6 @@ export default function Sidebar() {
 function TreeNode(props: {
   node: FileNode;
   depth: number;
-  parentPath: number[];
-  index: number;
   createTargetDir: () => string | null;
   isCreatingFile: () => boolean;
   isCreatingDir: () => boolean;
@@ -365,6 +356,7 @@ function TreeNode(props: {
     isFileOpen,
     openFile: storeOpenFile,
     setFileTree,
+    toggleDirectory,
     openContextMenu,
     deleteItem,
     renameItem,
@@ -421,8 +413,6 @@ function TreeNode(props: {
   }
 
   async function toggleDir() {
-    const path = getStorePath();
-
     if (!props.node.loaded) {
       try {
         const entries = await invoke<any[]>("list_dir", {
@@ -436,14 +426,14 @@ function TreeNode(props: {
           expanded: false,
           loaded: false,
         }));
-        (setFileTree as any)(...path, "children", children);
-        (setFileTree as any)(...path, "loaded", true);
+        toggleDirectory(props.node.path, children);
       } catch (e) {
         console.error("Failed to list dir:", e);
+        toggleDirectory(props.node.path, []);
       }
+    } else {
+      toggleDirectory(props.node.path);
     }
-
-    (setFileTree as any)(...path, "expanded", !props.node.expanded);
   }
 
   async function openFileFromTree() {
@@ -466,15 +456,6 @@ function TreeNode(props: {
     } finally {
       setLoadingFilePath(null);
     }
-  }
-
-  function getStorePath(): any[] {
-    const result: any[] = [];
-    for (const idx of props.parentPath) {
-      result.push(idx, "children");
-    }
-    result.push(props.index);
-    return result;
   }
 
   function handleContextMenu(e: MouseEvent) {
@@ -742,19 +723,27 @@ function TreeNode(props: {
           </div>
         </Show>
 
+        <Show when={props.node.children && props.node.children.length === 0 && !props.isCreatingFile() && !props.isCreatingDir()}>
+          <div
+            class="tree-node tree-empty-folder"
+            style={{ "padding-left": `${8 + (props.depth + 1) * 12}px`, opacity: 0.5, "font-style": "italic", "user-select": "none", "font-size": "11.5px" }}
+          >
+            <span class="tree-name">No files in folder</span>
+          </div>
+        </Show>
+
         <Show when={props.node.children}>
           <For each={props.node.children}>
-            {(child, childIndex) => (
+            {(child) => (
               <TreeNode
                 node={child}
                 depth={props.depth + 1}
-                parentPath={[...props.parentPath, props.index]}
-                index={childIndex()}
                 createTargetDir={props.createTargetDir}
                 isCreatingFile={props.isCreatingFile}
                 isCreatingDir={props.isCreatingDir}
                 newItemName={props.newItemName}
                 setNewItemName={props.setNewItemName}
+                inputRef={props.inputRef}
                 handleInputKeyDown={props.handleInputKeyDown}
                 handleConfirmCreate={props.handleConfirmCreate}
                 onStartCreateFile={props.onStartCreateFile}

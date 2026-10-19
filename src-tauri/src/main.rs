@@ -35,6 +35,7 @@ fn main() {
                 &[
                     &MenuItem::with_id(app, "new-file", "New File", true, Some("CmdOrCtrl+N"))?,
                     &MenuItem::with_id(app, "open-file", "Open File...", true, Some("CmdOrCtrl+O"))?,
+                    &MenuItem::with_id(app, "open-folder", "Open Folder...", true, Some("CmdOrCtrl+Alt+O"))?,
                     &MenuItem::with_id(app, "save-file", "Save", true, Some("CmdOrCtrl+S"))?,
                     &PredefinedMenuItem::separator(app)?,
                     &MenuItem::with_id(app, "close-tab", "Close Editor", true, Some("CmdOrCtrl+W"))?,
@@ -106,6 +107,8 @@ fn main() {
                 let _ = app.emit("menu-new-file", ());
             } else if event.id() == "open-file" {
                 let _ = app.emit("menu-open-file", ());
+            } else if event.id() == "open-folder" {
+                let _ = app.emit("menu-open-folder", ());
             } else if event.id() == "save-file" {
                 let _ = app.emit("menu-save-file", ());
             } else if event.id() == "close-window" {

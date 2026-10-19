@@ -1,6 +1,7 @@
 import { createSignal, createRoot, batch } from "solid-js";
 import { createStore, produce } from "solid-js/store";
 import { invoke } from "@tauri-apps/api/core";
+import { open } from "@tauri-apps/plugin-dialog";
 
 export interface FileNode {
   name: string;
@@ -426,7 +427,8 @@ function createEditorStore() {
     return statuses[path] || statuses[path.replace(/\\/g, "/")];
   };
 
-  async function loadFolder(path: string) {
+  async function loadFolder(rawPath: string) {
+    const path = rawPath.replace(/[/\\]+$/, "");
     try {
       const entries = await invoke<any[]>("list_dir", { path });
       setRootPath(path);
@@ -450,7 +452,30 @@ function createEditorStore() {
       setGitBranch(null);
       setGitFileStatuses({});
       setGitDirStatuses({});
+      setFileTree([]);
     }
+  }
+
+  function toggleDirectory(dirPath: string, children?: FileNode[]) {
+    setFileTree(
+      produce((nodes) => {
+        const walk = (list: FileNode[]): boolean => {
+          for (const n of list) {
+            if (n.path === dirPath) {
+              if (children !== undefined) {
+                n.children = children;
+                n.loaded = true;
+              }
+              n.expanded = !n.expanded;
+              return true;
+            }
+            if (n.isDir && n.children && walk(n.children)) return true;
+          }
+          return false;
+        };
+        walk(nodes);
+      })
+    );
   }
 
   // ---- Incremental tree patching ----
@@ -802,6 +827,51 @@ function createEditorStore() {
     saveSession();
   }
 
+  function extractSelectedPath(selected: any): string | null {
+    if (!selected) return null;
+    if (typeof selected === "string") return selected;
+    if (Array.isArray(selected) && selected.length > 0) {
+      return extractSelectedPath(selected[0]);
+    }
+    if (typeof selected === "object" && typeof selected.path === "string") {
+      return selected.path;
+    }
+    return null;
+  }
+
+  async function openFolderDialog() {
+    try {
+      const selected = await open({ directory: true, multiple: false });
+      const path = extractSelectedPath(selected);
+      if (path) {
+        await loadFolder(path);
+      }
+    } catch (err) {
+      console.error("Failed to open folder:", err);
+    }
+  }
+
+  async function openFileDialog() {
+    try {
+      const selected = await open({ multiple: false, directory: false });
+      const path = extractSelectedPath(selected);
+      if (path) {
+        const name = path.split(/[/\\]/).pop() ?? path;
+        if (isBinaryImageFile(name)) {
+          openFile(path, name, "");
+          return;
+        }
+        setLoadingFilePath(path);
+        const content = await invoke<string>("read_file", { path });
+        openFile(path, name, content);
+      }
+    } catch (e) {
+      console.error("Failed to open file:", e);
+    } finally {
+      setLoadingFilePath(null);
+    }
+  }
+
   function closeFile(path: string, force: boolean = false) {
     const file = openFiles.find((f) => f.path === path);
     if (!file) return;
@@ -956,9 +1026,12 @@ function createEditorStore() {
     rootPath,
     setRootPath,
     loadFolder,
+    openFolderDialog,
+    openFileDialog,
     closeFolder,
     fileTree,
     setFileTree,
+    toggleDirectory,
     upsertTreeNode,
     removeTreeNode,
     renameTreeNode,

@@ -1,6 +1,5 @@
 import { createSignal, createEffect, onMount, onCleanup, For, Show } from "solid-js";
 import { invoke } from "@tauri-apps/api/core";
-import { open } from "@tauri-apps/plugin-dialog";
 import { editorStore, isBinaryImageFile } from "../stores/editor";
 import { getFileIcon } from "./FileIcon";
 import { extractSymbols, getSymbolIcon, type SymbolItem } from "../utils/symbols";
@@ -24,6 +23,8 @@ export default function QuickOpen() {
   const {
     rootPath,
     loadFolder,
+    openFolderDialog,
+    openFileDialog,
     closeFolder,
     isSearchOpen,
     closeSearch,
@@ -78,33 +79,6 @@ export default function QuickOpen() {
     setFileSymbols(list);
   }
 
-  async function openFileDialog() {
-    const selected = await open({ multiple: false, directory: false });
-    if (selected && typeof selected === "string") {
-      const name = selected.split("/").pop() ?? selected.split("\\").pop() ?? selected;
-      if (isBinaryImageFile(name)) {
-        openFile(selected, name, "");
-        return;
-      }
-      try {
-        setLoadingFilePath(selected);
-        const content = await invoke<string>("read_file", { path: selected });
-        openFile(selected, name, content);
-      } catch (err) {
-        console.error("Failed to open file:", err);
-      } finally {
-        setLoadingFilePath(null);
-      }
-    }
-  }
-
-  async function openFolderDialog() {
-    const selected = await open({ directory: true, multiple: false });
-    if (selected && typeof selected === "string") {
-      await loadFolder(selected);
-    }
-  }
-
   const allCommands = (): CommandItem[] => [
     {
       id: "file.new",
@@ -132,7 +106,7 @@ export default function QuickOpen() {
       id: "file.openFolder",
       category: "File",
       title: "Open Folder...",
-      shortcut: "⌘K ⌘O",
+      shortcut: "⌘⌥O",
       icon: "codicon-folder-opened",
       action: () => {
         closeSearch();

@@ -52,6 +52,7 @@ export default function App() {
     openGoToLine,
     closeGoToLine,
     toggleWordWrap,
+    openFolderDialog,
   } = editorStore;
 
   // Theme swap: apply the attribute + freeze transitions/animations for one
@@ -127,6 +128,13 @@ export default function App() {
     if (e.altKey && (e.key.toLowerCase() === "z" || e.code === "KeyZ")) {
       e.preventDefault();
       toggleWordWrap();
+      return;
+    }
+
+    // Open Folder shortcut (⌘⌥O / Ctrl+Alt+O)
+    if (isMod && e.altKey && e.key.toLowerCase() === "o") {
+      e.preventDefault();
+      openFolderDialog();
       return;
     }
 
