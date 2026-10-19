@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Download CMX — macOS, Linux and Windows</title>
+<meta name="description" content="Download CMX 0.1.0 for macOS, Linux and Windows. macOS Apple Silicon ships a .dmg installer; Linux and Windows build from source.">
+<link rel="canonical" href="https://chaitmudunuri.github.io/cmx/downloads.html">
+<meta name="theme-color" content="#141416">
+<meta name="color-scheme" content="dark">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="CMX">
+<meta property="og:url" content="https://chaitmudunuri.github.io/cmx/downloads.html">
+<meta property="og:title" content="Download CMX — macOS, Linux and Windows">
+<meta property="og:description" content="Download CMX 0.1.0 for macOS, Linux and Windows. macOS Apple Silicon ships a .dmg installer; Linux and Windows build from source.">
+<meta property="og:image" content="https://chaitmudunuri.github.io/cmx/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="CMX code editor showing a dark-theme workspace with the file explorer open and syntax-highlighted TypeScript.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Download CMX — macOS, Linux and Windows">
+<meta name="twitter:description" content="Download CMX 0.1.0 for macOS, Linux and Windows. macOS Apple Silicon ships a .dmg installer; Linux and Windows build from source.">
+<meta name="twitter:image" content="https://chaitmudunuri.github.io/cmx/social-preview.png">
+
+<link rel="stylesheet" href="/assets/site.css">
+<link rel="icon" href="https://raw.githubusercontent.com/chaitmudunuri/cmx/main/app-icon.svg" type="image/svg+xml">
+
+<script type="application/ld+json" id="schema_0">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Download","item":"https://chaitmudunuri.github.io/cmx/downloads.html"}]}</script>
+<script type="application/ld+json" id="schema_1">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"CMX","alternateName":"CMX editor","description":"A native-feeling code editor with Vim mode, workspace search, and live preview. No Electron, no bundled browser.","url":"https://chaitmudunuri.github.io/cmx/","applicationCategory":"DeveloperApplication","applicationSubCategory":"Text editor","operatingSystem":"macOS, Linux, Windows","softwareVersion":"0.1.0","license":"https://github.com/chaitmudunuri/cmx/blob/main/LICENSE","downloadUrl":"https://github.com/chaitmudunuri/cmx/releases/download/v0.1.0/cmx.editor_0.1.0_aarch64.dmg","installUrl":"https://chaitmudunuri.github.io/cmx/docs/installation.html","softwareHelp":"https://chaitmudunuri.github.io/cmx/docs.html","releaseNotes":"https://github.com/chaitmudunuri/cmx/releases/tag/v0.1.0","image":"https://chaitmudunuri.github.io/cmx/social-preview.png","author":{"@type":"Person","name":"chaitmudunuri","url":"https://github.com/chaitmudunuri"},"maintainer":{"@type":"Person","name":"chaitmudunuri"},"offers":[{"@type":"Offer","price":"0","priceCurrency":"USD"}],"featureList":["Vim mode with Friendly and Expert levels","Workspace-wide search that respects .gitignore","Quick Open ranked file finder","Live preview for Markdown, HTML and SVG","Large-file fast mode","Dark and light themes"],"codeRepository":"https://github.com/chaitmudunuri/cmx","programmingLanguage":["Rust","TypeScript"]}</script>
+</head>
+<body>
+<header class="site">
+  <div class="wrap bar">
+    <a class="brand" href="/">CMX</a>
+    <nav aria-label="Main"><a href="/features.html">Features</a><a href="/performance.html">Performance</a><a href="/downloads.html" class="on">Download</a><div class="has-sub"><a href="/docs.html">Docs</a><div class="sub"><a href="/docs/installation.html">Installation</a><a href="/docs/shortcuts.html">Keyboard shortcuts</a><a href="/docs/configuration.html">Configuration</a><a href="/docs/troubleshooting.html">Troubleshooting</a><a href="/docs/development.html">Developer setup</a></div></div><a href="/contributing.html">Contributing</a><a class="gh" href="https://github.com/chaitmudunuri/cmx" rel="noopener">GitHub</a></nav>
+  </div>
+</header>
+<main id="main">
+  <div class="wrap">
+<ol class="crumbs"><li><a href="/downloads.html">Download</a></li></ol>
+<h1>Download</h1>
+
+<p class="lede">Latest stable release: <b>v0.1.0</b>. CMX is free and MIT licensed — there is
+no trial, no account and no telemetry.</p>
+<p><a class="btn btn-p" href="https://github.com/chaitmudunuri/cmx/releases/latest" rel="noopener">Open the latest release on GitHub</a></p>
+
+<h2>Platform support</h2>
+<p>This is the honest state of v0.1.0. A download is listed only where a binary actually
+exists.</p>
+<table>
+<thead><tr><th>Platform</th><th>Prebuilt download</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td>macOS (Apple Silicon)</td><td><code>.dmg</code></td><td class="y">Available in every release</td></tr>
+<tr><td>macOS (Intel)</td><td>—</td><td class="n">Build from source</td></tr>
+<tr><td>Linux (x86_64)</td><td>—</td><td class="n">Build from source</td></tr>
+<tr><td>Windows (x86_64)</td><td>—</td><td class="n">Build from source</td></tr>
+</tbody>
+</table>
+<p class="note"><b>Linux and Windows are not second-class.</b> All three platforms build and run
+today, and the CI workflow builds and tests all three on every push. Prebuilt installers for
+Linux and Windows are tracked as the next <a href="/contributing.html#roadmap">release
+milestone</a>.</p>
+
+<h2 id="macos">macOS — Apple Silicon</h2>
+<p>Download the <code>.dmg</code>, then drag <b>cmx editor</b> into Applications:</p>
+<pre><code>curl -fLo cmx.dmg \
+  https://github.com/chaitmudunuri/cmx/releases/download/v0.1.0/cmx.editor_0.1.0_aarch64.dmg
+hdiutil attach cmx.dmg &amp;&amp; cp -R "cmx editor.app" /Applications/</code></pre>
+<p>Launch it from Applications, or from the terminal:</p>
+<pre><code>open -a "cmx editor" ~/your/project</code></pre>
+<p class="note"><b>macOS builds are unsigned.</b> Gatekeeper will refuse to open it on first
+launch. Right-click the app and choose <b>Open</b>, or run:
+<br><code>xattr -dr com.apple.quarantine "/Applications/cmx editor.app"</code>
+<br>Code signing and notarization are on the roadmap.</p>
+
+<h2>Linux</h2>
+<p>No <code>.deb</code> or AppImage is published yet, so build from source. Install the
+WebKitGTK toolchain first:</p>
+<pre><code># Debian / Ubuntu
+sudo apt install libwebkit2gtk-4.1-dev build-essential curl wget file \
+  libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev
+
+# Fedora
+sudo dnf install webkit2gtk4.1-devel openssl-devel libxdo-devel \
+  libappindicator-gtk3-devel librsvg2-devel</code></pre>
+<p>Then follow <a href="/docs/development.html">developer setup</a>. You can produce local
+packages immediately with <code>pnpm tauri build</code>, which writes <code>.deb</code>,
+<code>.rpm</code> and AppImage to <code>src-tauri/target/release/bundle/</code>.</p>
+
+<h2>Windows</h2>
+<p>No installer is published yet, so build from source. You need
+<a href="https://rustup.rs">Rust</a>, Node 20+ and the
+<a href="https://developer.microsoft.com/microsoft-edge/webview2/">WebView2 runtime</a>, which is
+pre-installed on Windows 11. From PowerShell:</p>
+<pre><code>git clone https://github.com/chaitmudunuri/cmx.git
+cd cmx
+corepack enable
+pnpm install
+pnpm tauri dev</code></pre>
+
+<h2>Verify what you downloaded</h2>
+<p>Every published release includes a <code>CHECKSUMS.txt</code>:</p>
+<pre><code>sha256sum -c CHECKSUMS.txt</code></pre>
+<p>If a checksum does not match, do not run the file —
+<a href="https://github.com/chaitmudunuri/cmx/issues/new/choose" rel="noopener">report it</a>.</p>
+
+<h2>Other systems</h2>
+<p>Package managers such as Homebrew, Scoop and the AUR are not yet publishing CMX. Please do not
+add unofficial packages on the project's behalf — open an issue and we will help scope an
+official one. The <a href="/docs.html">documentation</a> covers configuration once it is running.</p>
+
+  </div>
+</main>
+<footer class="site">
+  <div class="wrap foot">
+    <p>CMX is MIT licensed and free software. Built with
+      <a href="https://tauri.app">Tauri 2</a>,
+      <a href="https://codemirror.net">CodeMirror 6</a> and
+      <a href="https://www.solidjs.com">Solid.js</a>, in Rust.
+      The <a href="https://github.com/chaitmudunuri/cmx">GitHub repository</a> is the source of truth for the code.</p>
+    <nav aria-label="Footer">
+      <a href="/features.html">Features</a>
+      <a href="/performance.html">Performance</a>
+      <a href="/downloads.html">Download</a>
+      <a href="/docs.html">Docs</a>
+      <a href="/contributing.html">Contributing</a>
+      <a href="https://github.com/chaitmudunuri/cmx">GitHub</a>
+    </nav>
+  </div>
+</footer>
+</body>
+</html>

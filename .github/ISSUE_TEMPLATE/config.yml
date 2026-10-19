@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question or discussion
+    url: https://github.com/chaitmudunuri/cmx/discussions
+    about: Ask how to use cmx, or discuss ideas that don't fit a bug or feature report.
+  - name: Contributing guide
+    url: https://github.com/chaitmudunuri/cmx/blob/main/CONTRIBUTING.md
+    about: How to build cmx locally, our style, and the checks to run before opening a PR.
+  - name: Project status and roadmap
+    url: https://github.com/chaitmudunuri/cmx#install
+    about: Which platforms ship a prebuilt binary today, and how to build from source.
+  - name: Report a security vulnerability
+    url: https://github.com/chaitmudunuri/cmx/security/advisories/new
+    about: Privately report a security issue. Please don't open a public issue.

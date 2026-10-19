@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://chaitmudunuri.github.io/cmx/sitemap.xml

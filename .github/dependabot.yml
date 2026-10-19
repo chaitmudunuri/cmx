@@ -1,0 +1,49 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      frontend:
+        patterns:
+          - "@codemirror/*"
+          - "codemirror"
+          - "@lezer/*"
+          - "@replit/*"
+          - "solid-js"
+          - "marked"
+          - "@tauri-apps/api"
+          - "@tauri-apps/plugin-*"
+          - "@fontsource*"
+          - "@vscode/codicons"
+      build-tooling:
+        patterns:
+          - "vite"
+          - "typescript"
+          - "vitest"
+          - "vite-plugin-solid"
+
+  - package-ecosystem: cargo
+    directory: /src-tauri
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      tauri:
+        patterns:
+          - "tauri"
+          - "tauri-*"
+          - "cocoa"
+      libraries:
+        patterns:
+          - "serde"
+          - "serde_json"
+          - "regex"
+          - "ignore"
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

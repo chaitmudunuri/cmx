@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CMX keyboard shortcuts — macOS and Windows/Linux</title>
+<meta name="description" content="The complete CMX keymap with macOS and Windows/Linux bindings, plus the Vim mode Ex command reference.">
+<link rel="canonical" href="https://chaitmudunuri.github.io/cmx/docs/shortcuts.html">
+<meta name="theme-color" content="#141416">
+<meta name="color-scheme" content="dark">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="CMX">
+<meta property="og:url" content="https://chaitmudunuri.github.io/cmx/docs/shortcuts.html">
+<meta property="og:title" content="CMX keyboard shortcuts — macOS and Windows/Linux">
+<meta property="og:description" content="The complete CMX keymap with macOS and Windows/Linux bindings, plus the Vim mode Ex command reference.">
+<meta property="og:image" content="https://chaitmudunuri.github.io/cmx/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="CMX code editor showing a dark-theme workspace with the file explorer open and syntax-highlighted TypeScript.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="CMX keyboard shortcuts — macOS and Windows/Linux">
+<meta name="twitter:description" content="The complete CMX keymap with macOS and Windows/Linux bindings, plus the Vim mode Ex command reference.">
+<meta name="twitter:image" content="https://chaitmudunuri.github.io/cmx/social-preview.png">
+
+<link rel="stylesheet" href="/assets/site.css">
+<link rel="icon" href="https://raw.githubusercontent.com/chaitmudunuri/cmx/main/app-icon.svg" type="image/svg+xml">
+
+<script type="application/ld+json" id="schema_0">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Docs","item":"https://chaitmudunuri.github.io/cmx/docs.html"},{"@type":"ListItem","position":2,"name":"Keyboard shortcuts","item":"https://chaitmudunuri.github.io/cmx/docs/shortcuts.html"}]}</script>
+<script type="application/ld+json" id="schema_1">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"CMX","alternateName":"CMX editor","description":"A native-feeling code editor with Vim mode, workspace search, and live preview. No Electron, no bundled browser.","url":"https://chaitmudunuri.github.io/cmx/","applicationCategory":"DeveloperApplication","applicationSubCategory":"Text editor","operatingSystem":"macOS, Linux, Windows","softwareVersion":"0.1.0","license":"https://github.com/chaitmudunuri/cmx/blob/main/LICENSE","downloadUrl":"https://github.com/chaitmudunuri/cmx/releases/download/v0.1.0/cmx.editor_0.1.0_aarch64.dmg","installUrl":"https://chaitmudunuri.github.io/cmx/docs/installation.html","softwareHelp":"https://chaitmudunuri.github.io/cmx/docs.html","releaseNotes":"https://github.com/chaitmudunuri/cmx/releases/tag/v0.1.0","image":"https://chaitmudunuri.github.io/cmx/social-preview.png","author":{"@type":"Person","name":"chaitmudunuri","url":"https://github.com/chaitmudunuri"},"maintainer":{"@type":"Person","name":"chaitmudunuri"},"offers":[{"@type":"Offer","price":"0","priceCurrency":"USD"}],"featureList":["Vim mode with Friendly and Expert levels","Workspace-wide search that respects .gitignore","Quick Open ranked file finder","Live preview for Markdown, HTML and SVG","Large-file fast mode","Dark and light themes"],"codeRepository":"https://github.com/chaitmudunuri/cmx","programmingLanguage":["Rust","TypeScript"]}</script>
+</head>
+<body>
+<header class="site">
+  <div class="wrap bar">
+    <a class="brand" href="/">CMX</a>
+    <nav aria-label="Main"><a href="/features.html">Features</a><a href="/performance.html">Performance</a><a href="/downloads.html">Download</a><div class="has-sub"><a href="/docs.html">Docs</a><div class="sub"><a href="/docs/installation.html">Installation</a><a href="/docs/shortcuts.html">Keyboard shortcuts</a><a href="/docs/configuration.html">Configuration</a><a href="/docs/troubleshooting.html">Troubleshooting</a><a href="/docs/development.html">Developer setup</a></div></div><a href="/contributing.html">Contributing</a><a class="gh" href="https://github.com/chaitmudunuri/cmx" rel="noopener">GitHub</a></nav>
+  </div>
+</header>
+<main id="main">
+  <div class="wrap">
+<ol class="crumbs"><li><a href="/docs.html">Docs</a></li><li><a href="/docs/shortcuts.html">Keyboard shortcuts</a></li></ol>
+<h1>Keyboard shortcuts</h1>
+
+<p class="lede">Every binding CMX ships with. On Windows and Linux, <code>Cmd</code> becomes
+<code>Ctrl</code>.</p>
+<table>
+<thead><tr><th>macOS</th><th>Windows / Linux</th><th>Action</th></tr></thead>
+<tbody>
+<tr><td><code>⌘P</code></td><td><code>Ctrl+P</code></td><td>Quick Open — ranked file finder</td></tr>
+<tr><td><code>⌘⇧P</code></td><td><code>Ctrl+Shift+P</code> / <code>F1</code></td><td>Command palette</td></tr>
+<tr><td><code>⌘⇧F</code></td><td><code>Ctrl+Shift+F</code></td><td>Workspace search</td></tr>
+<tr><td><code>⌘⇧V</code></td><td><code>Ctrl+Shift+V</code></td><td>Toggle live preview (Markdown, HTML, SVG)</td></tr>
+<tr><td><code>⌘S</code></td><td><code>Ctrl+S</code></td><td>Save (save-as for untitled files)</td></tr>
+<tr><td><code>⌘O</code></td><td><code>Ctrl+O</code></td><td>Open file</td></tr>
+<tr><td><code>⌘B</code></td><td><code>Ctrl+B</code></td><td>Toggle sidebar</td></tr>
+<tr><td><code>⌘N</code></td><td><code>Ctrl+N</code></td><td>New file</td></tr>
+<tr><td><code>⌘G</code></td><td><code>Ctrl+G</code></td><td>Go to line and column</td></tr>
+<tr><td><code>⌘,</code></td><td><code>Ctrl+,</code></td><td>Settings</td></tr>
+<tr><td><code>⌘⇧E</code></td><td><code>Ctrl+Shift+E</code></td><td>Show the file explorer</td></tr>
+<tr><td><code>⌘=</code></td><td><code>Ctrl+=</code></td><td>Zoom in</td></tr>
+<tr><td><code>⌘-</code></td><td><code>Ctrl+-</code></td><td>Zoom out</td></tr>
+<tr><td><code>⌘0</code></td><td><code>Ctrl+0</code></td><td>Reset zoom</td></tr>
+<tr><td><code>⌥Z</code></td><td><code>Alt+Z</code></td><td>Toggle word wrap</td></tr>
+<tr><td><code>Esc</code></td><td><code>Esc</code></td><td>Dismiss dialogs — never cancels typing</td></tr>
+</tbody>
+</table>
+
+<h2 id="vim-mode">Vim mode</h2>
+<p>When Vim mode is enabled, CMX's own bindings stay available and modal editing takes over in the
+editor. Ex commands include:</p>
+<pre><code>:w    save          :noh   clear search highlight
+:q    close         :bd    close buffer
+:q!   close, discard changes
+:wq   save and close
+:x    save and close
+:e    reload
+:new  new buffer</code></pre>
+<p>The status bar shows the current mode (<code>NORMAL</code>, <code>INSERT</code>,
+<code>VISUAL</code>), and a which-key style hint bar appears while <code>Friendly</code> or
+<code>Expert</code> mode is active.</p>
+<p>See <a href="/features.html#vim-mode">Vim mode</a> for what each level includes.</p>
+
+  </div>
+</main>
+<footer class="site">
+  <div class="wrap foot">
+    <p>CMX is MIT licensed and free software. Built with
+      <a href="https://tauri.app">Tauri 2</a>,
+      <a href="https://codemirror.net">CodeMirror 6</a> and
+      <a href="https://www.solidjs.com">Solid.js</a>, in Rust.
+      The <a href="https://github.com/chaitmudunuri/cmx">GitHub repository</a> is the source of truth for the code.</p>
+    <nav aria-label="Footer">
+      <a href="/features.html">Features</a>
+      <a href="/performance.html">Performance</a>
+      <a href="/downloads.html">Download</a>
+      <a href="/docs.html">Docs</a>
+      <a href="/contributing.html">Contributing</a>
+      <a href="https://github.com/chaitmudunuri/cmx">GitHub</a>
+    </nav>
+  </div>
+</footer>
+</body>
+</html>

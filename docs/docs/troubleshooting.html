@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Troubleshooting CMX — macOS, Linux and Windows fixes</title>
+<meta name="description" content="Fix common CMX problems: macOS Gatekeeper and unsigned builds, missing WebKitGTK on Linux, WebView2 on Windows, and large-file fast mode.">
+<link rel="canonical" href="https://chaitmudunuri.github.io/cmx/docs/troubleshooting.html">
+<meta name="theme-color" content="#141416">
+<meta name="color-scheme" content="dark">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="CMX">
+<meta property="og:url" content="https://chaitmudunuri.github.io/cmx/docs/troubleshooting.html">
+<meta property="og:title" content="Troubleshooting CMX — macOS, Linux and Windows fixes">
+<meta property="og:description" content="Fix common CMX problems: macOS Gatekeeper and unsigned builds, missing WebKitGTK on Linux, WebView2 on Windows, and large-file fast mode.">
+<meta property="og:image" content="https://chaitmudunuri.github.io/cmx/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="CMX code editor showing a dark-theme workspace with the file explorer open and syntax-highlighted TypeScript.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Troubleshooting CMX — macOS, Linux and Windows fixes">
+<meta name="twitter:description" content="Fix common CMX problems: macOS Gatekeeper and unsigned builds, missing WebKitGTK on Linux, WebView2 on Windows, and large-file fast mode.">
+<meta name="twitter:image" content="https://chaitmudunuri.github.io/cmx/social-preview.png">
+
+<link rel="stylesheet" href="/assets/site.css">
+<link rel="icon" href="https://raw.githubusercontent.com/chaitmudunuri/cmx/main/app-icon.svg" type="image/svg+xml">
+
+<script type="application/ld+json" id="schema_0">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Docs","item":"https://chaitmudunuri.github.io/cmx/docs.html"},{"@type":"ListItem","position":2,"name":"Troubleshooting","item":"https://chaitmudunuri.github.io/cmx/docs/troubleshooting.html"}]}</script>
+<script type="application/ld+json" id="schema_1">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"CMX","alternateName":"CMX editor","description":"A native-feeling code editor with Vim mode, workspace search, and live preview. No Electron, no bundled browser.","url":"https://chaitmudunuri.github.io/cmx/","applicationCategory":"DeveloperApplication","applicationSubCategory":"Text editor","operatingSystem":"macOS, Linux, Windows","softwareVersion":"0.1.0","license":"https://github.com/chaitmudunuri/cmx/blob/main/LICENSE","downloadUrl":"https://github.com/chaitmudunuri/cmx/releases/download/v0.1.0/cmx.editor_0.1.0_aarch64.dmg","installUrl":"https://chaitmudunuri.github.io/cmx/docs/installation.html","softwareHelp":"https://chaitmudunuri.github.io/cmx/docs.html","releaseNotes":"https://github.com/chaitmudunuri/cmx/releases/tag/v0.1.0","image":"https://chaitmudunuri.github.io/cmx/social-preview.png","author":{"@type":"Person","name":"chaitmudunuri","url":"https://github.com/chaitmudunuri"},"maintainer":{"@type":"Person","name":"chaitmudunuri"},"offers":[{"@type":"Offer","price":"0","priceCurrency":"USD"}],"featureList":["Vim mode with Friendly and Expert levels","Workspace-wide search that respects .gitignore","Quick Open ranked file finder","Live preview for Markdown, HTML and SVG","Large-file fast mode","Dark and light themes"],"codeRepository":"https://github.com/chaitmudunuri/cmx","programmingLanguage":["Rust","TypeScript"]}</script>
+</head>
+<body>
+<header class="site">
+  <div class="wrap bar">
+    <a class="brand" href="/">CMX</a>
+    <nav aria-label="Main"><a href="/features.html">Features</a><a href="/performance.html">Performance</a><a href="/downloads.html">Download</a><div class="has-sub"><a href="/docs.html">Docs</a><div class="sub"><a href="/docs/installation.html">Installation</a><a href="/docs/shortcuts.html">Keyboard shortcuts</a><a href="/docs/configuration.html">Configuration</a><a href="/docs/troubleshooting.html">Troubleshooting</a><a href="/docs/development.html">Developer setup</a></div></div><a href="/contributing.html">Contributing</a><a class="gh" href="https://github.com/chaitmudunuri/cmx" rel="noopener">GitHub</a></nav>
+  </div>
+</header>
+<main id="main">
+  <div class="wrap">
+<ol class="crumbs"><li><a href="/docs.html">Docs</a></li><li><a href="/docs/troubleshooting.html">Troubleshooting</a></li></ol>
+<h1>Troubleshooting</h1>
+
+<p class="lede">The problems people actually hit, and what to do about them. If yours is not
+here, <a href="https://github.com/chaitmudunuri/cmx/issues/new/choose" rel="noopener">open an issue</a> — Linux and Windows
+reports are especially welcome, since neither platform has a prebuilt binary yet.</p>
+
+<h2>macOS</h2>
+<h3>"CMX is damaged and can't be opened"</h3>
+<p>Gatekeeper is blocking an unsigned build. Right-click the app and choose <b>Open</b>, or:</p>
+<pre><code>xattr -dr com.apple.quarantine "/Applications/cmx editor.app"</code></pre>
+<h3>Blank or white window</h3>
+<p>macOS caches web content. Quit CMX fully and relaunch. If it persists, clear the webview cache
+by removing <code>~/Library/WebKit/com.cmx.editor</code> — settings are stored separately and will
+survive.</p>
+<h3>The app is slow to start on first launch</h3>
+<p>macOS Gatekeeper checks the unsigned binary on first launch only. Subsequent launches skip it.</p>
+
+<h2>Linux</h2>
+<h3><code>libwebkit2gtk-4.1.so.0: cannot open shared object file</code></h3>
+<p>WebKitGTK 4.1 is missing or too old. Install the development packages — see
+<a href="/docs/installation.html#linux">Linux installation</a>.</p>
+<h3>Blank window</h3>
+<p>Check that the appindicator and librsvg libraries are present; some minimal desktop images omit
+them. Also confirm the session is not running Wayland without a working WebKitGTK portal.</p>
+
+<h2>Windows</h2>
+<h3>The window never appears</h3>
+<p>The WebView2 runtime is missing or broken. Install the
+<a href="https://developer.microsoft.com/microsoft-edge/webview2/">Evergreen runtime</a> and
+relaunch.</p>
+<h3>Build fails with a linker error</h3>
+<p>Install the Visual Studio Build Tools with the <b>Desktop development with C++</b> workload, then
+restart the shell so the toolchain is on <code>PATH</code>.</p>
+
+<h2>Any platform</h2>
+<h3>Large file opened slowly, or shows a FAST badge</h3>
+<p>This is working as designed. Files over 1.5&nbsp;MB or 25,000 lines drop into fast mode with
+parsing off. See <a href="/features.html#large-files">large files</a>.</p>
+<h3>Search returns nothing for a file I know contains the text</h3>
+<p>Workspace search honours <code>.gitignore</code> and skips hidden files. A file excluded by
+either will not match — that is deliberate, not a bug.</p>
+<h3>Accented or pasted characters display incorrectly</h3>
+<p>Check the encoding indicator in the status bar. CMX opens files as UTF-8 and falls back
+gracefully; a mis-encoded file may need re-saving as UTF-8 in another tool.</p>
+<h3>CMX will not close</h3>
+<p>Unsaved changes prompt for confirmation. <code>Esc</code> dismisses dialogs and never cancels
+your typing, so it will not discard a buffer for you.</p>
+
+<h2>Reporting a bug</h2>
+<p>Include your CMX version, OS and architecture, what you expected, what happened, and minimal
+reproduction steps. Logs from the developer console help. Use the
+<a href="https://github.com/chaitmudunuri/cmx/issues/new/choose" rel="noopener">bug report template</a>.</p>
+
+  </div>
+</main>
+<footer class="site">
+  <div class="wrap foot">
+    <p>CMX is MIT licensed and free software. Built with
+      <a href="https://tauri.app">Tauri 2</a>,
+      <a href="https://codemirror.net">CodeMirror 6</a> and
+      <a href="https://www.solidjs.com">Solid.js</a>, in Rust.
+      The <a href="https://github.com/chaitmudunuri/cmx">GitHub repository</a> is the source of truth for the code.</p>
+    <nav aria-label="Footer">
+      <a href="/features.html">Features</a>
+      <a href="/performance.html">Performance</a>
+      <a href="/downloads.html">Download</a>
+      <a href="/docs.html">Docs</a>
+      <a href="/contributing.html">Contributing</a>
+      <a href="https://github.com/chaitmudunuri/cmx">GitHub</a>
+    </nav>
+  </div>
+</footer>
+</body>
+</html>

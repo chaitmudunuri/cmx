@@ -1,0 +1,166 @@
+name: Release
+
+# Publishes prebuilt bundles for every supported platform on a version tag.
+#
+#   git tag v0.2.0 && git push origin v0.2.0
+#
+# Each OS builds its own artifacts on its own runner — no cross-compilation, so
+# a green run means a genuinely working binary rather than a plausible one.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing tag to (re)build and attach artifacts to
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: macOS (Apple Silicon)
+            os: macos-14
+            target: aarch64-apple-darwin
+            bundles: dmg
+          - name: macOS (Intel)
+            os: macos-15-intel
+            target: x86_64-apple-darwin
+            bundles: dmg
+          - name: Linux (x86_64)
+            os: ubuntu-24.04
+            target: x86_64-unknown-linux-gnu
+            bundles: deb,appimage
+          - name: Windows (x86_64)
+            os: windows-latest
+            target: x86_64-pc-windows-msvc
+            bundles: nsis
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+          key: ${{ matrix.target }}
+
+      - name: Install Tauri system dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libappindicator3-dev \
+            librsvg2-dev \
+            patchelf \
+            libxdo-dev \
+            dpkg-dev \
+            fakeroot
+
+      - name: Install frontend dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Build
+        run: pnpm tauri build --bundles ${{ matrix.bundles }}
+
+      - name: Collect bundles
+        shell: bash
+        run: |
+          set -euo pipefail
+          BUNDLE_DIR="src-tauri/target/release/bundle"
+          if [ ! -d "$BUNDLE_DIR" ]; then
+            echo "::error::no bundle directory at $BUNDLE_DIR"
+            exit 1
+          fi
+
+          mkdir -p dist-artifacts
+          count=0
+          while IFS= read -r f; do
+            cp "$f" dist-artifacts/
+            count=$((count + 1))
+          done < <(find "$BUNDLE_DIR" -type f \
+                     \( -name '*.dmg' -o -name '*.deb' -o -name '*.rpm' \
+                        -o -name '*.AppImage' -o -name '*.exe' -o -name '*.msi' \))
+
+          if [ "$count" -eq 0 ]; then
+            echo "::error::expected '${{ matrix.bundles }}' bundles for ${{ matrix.target }}, found none"
+            find "$BUNDLE_DIR" -type f | head -50
+            exit 1
+          fi
+
+          echo "collected $count bundle(s) for ${{ matrix.target }}:"
+          ls -lh dist-artifacts
+
+      - name: Checksum
+        shell: bash
+        working-directory: dist-artifacts
+        run: |
+          sha256sum * > "checksums-${{ matrix.target }}.txt"
+          cat "checksums-${{ matrix.target }}.txt"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bundles-${{ matrix.target }}
+          path: dist-artifacts/
+          retention-days: 30
+
+  release:
+    name: Publish release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: incoming
+          merge-multiple: true
+
+      - name: Combine checksums
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat incoming/checksums-*.txt > CHECKSUMS.txt
+          rm -f incoming/checksums-*.txt
+          sort -k2 -o CHECKSUMS.txt CHECKSUMS.txt
+          echo "--- $(wc -l < CHECKSUMS.txt) artifact(s) ---"
+          cat CHECKSUMS.txt
+
+      - name: Attach to release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.inputs.tag || github.ref_name }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" incoming/* CHECKSUMS.txt --clobber
+            echo "Attached bundles to existing release $TAG."
+          else
+            gh release create "$TAG" incoming/* \
+              --title "$TAG" \
+              --generate-notes \
+              --notes-start-tag "$(git describe --tags --abbrev=0 "${TAG}^" 2>/dev/null || echo '')"
+            echo "Created release $TAG — review and edit its notes at:"
+            echo "  https://github.com/${{ github.repository }}/releases/tag/$TAG"
+          fi

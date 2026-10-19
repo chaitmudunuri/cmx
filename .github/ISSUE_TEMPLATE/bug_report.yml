@@ -1,0 +1,94 @@
+name: Bug report
+description: Something in cmx doesn't work as expected
+title: "[bug]: "
+labels: ["bug", "needs triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug!
+
+        **cmx is pre-1.0** and only macOS/Apple Silicon has a prebuilt binary today —
+        if you're on Linux or Windows, please say so below, as those platforms are
+        currently untested by the maintainer and your report is especially valuable.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you see, and what did you expect instead?
+      placeholder: |
+        Expected: typing `:w` saves the file.
+        Actual: nothing happens and the status bar still shows NORMAL.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: The shortest path from a fresh launch to the problem.
+      placeholder: |
+        1. Open a folder with a .rs file
+        2. Press ⌘⇧F and search for `fn`
+        3. Press ⌘S
+    validations:
+      required: true
+
+  - type: textarea
+    id: fixture
+    attributes:
+      label: Minimal fixture
+      description: |
+        A small project or file that triggers this, if you have one. You can attach
+        a zip, or paste the relevant snippet here.
+    validations:
+      required: false
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - macOS (Apple Silicon)
+        - macOS (Intel)
+        - Linux
+        - Windows
+        - Other / web
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: cmx version
+      placeholder: "0.1.0"
+    validations:
+      required: true
+
+  - type: input
+    id: install
+    attributes:
+      label: How are you running cmx?
+      placeholder: 'Prebuilt .dmg / pnpm tauri dev / pnpm tauri build'
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or console output
+      description: Anything from the app's developer console or the terminal.
+      render: shell
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues for this.
+          required: true
+        - label: I am on the latest release (or `main`).
+          required: false

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Features — CMX code editor for macOS, Linux and Windows</title>
+<meta name="description" content="Vim mode with three levels, .gitignore-aware workspace search, Quick Open, large-file fast mode, and live preview for Markdown, HTML and SVG.">
+<link rel="canonical" href="https://chaitmudunuri.github.io/cmx/features.html">
+<meta name="theme-color" content="#141416">
+<meta name="color-scheme" content="dark">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="CMX">
+<meta property="og:url" content="https://chaitmudunuri.github.io/cmx/features.html">
+<meta property="og:title" content="Features — CMX code editor for macOS, Linux and Windows">
+<meta property="og:description" content="Vim mode with three levels, .gitignore-aware workspace search, Quick Open, large-file fast mode, and live preview for Markdown, HTML and SVG.">
+<meta property="og:image" content="https://chaitmudunuri.github.io/cmx/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="CMX code editor showing a dark-theme workspace with the file explorer open and syntax-highlighted TypeScript.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Features — CMX code editor for macOS, Linux and Windows">
+<meta name="twitter:description" content="Vim mode with three levels, .gitignore-aware workspace search, Quick Open, large-file fast mode, and live preview for Markdown, HTML and SVG.">
+<meta name="twitter:image" content="https://chaitmudunuri.github.io/cmx/social-preview.png">
+
+<link rel="stylesheet" href="/assets/site.css">
+<link rel="icon" href="https://raw.githubusercontent.com/chaitmudunuri/cmx/main/app-icon.svg" type="image/svg+xml">
+
+<script type="application/ld+json" id="schema_0">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Features","item":"https://chaitmudunuri.github.io/cmx/features.html"}]}</script>
+<script type="application/ld+json" id="schema_1">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"CMX","alternateName":"CMX editor","description":"A native-feeling code editor with Vim mode, workspace search, and live preview. No Electron, no bundled browser.","url":"https://chaitmudunuri.github.io/cmx/","applicationCategory":"DeveloperApplication","applicationSubCategory":"Text editor","operatingSystem":"macOS, Linux, Windows","softwareVersion":"0.1.0","license":"https://github.com/chaitmudunuri/cmx/blob/main/LICENSE","downloadUrl":"https://github.com/chaitmudunuri/cmx/releases/download/v0.1.0/cmx.editor_0.1.0_aarch64.dmg","installUrl":"https://chaitmudunuri.github.io/cmx/docs/installation.html","softwareHelp":"https://chaitmudunuri.github.io/cmx/docs.html","releaseNotes":"https://github.com/chaitmudunuri/cmx/releases/tag/v0.1.0","image":"https://chaitmudunuri.github.io/cmx/social-preview.png","author":{"@type":"Person","name":"chaitmudunuri","url":"https://github.com/chaitmudunuri"},"maintainer":{"@type":"Person","name":"chaitmudunuri"},"offers":[{"@type":"Offer","price":"0","priceCurrency":"USD"}],"featureList":["Vim mode with Friendly and Expert levels","Workspace-wide search that respects .gitignore","Quick Open ranked file finder","Live preview for Markdown, HTML and SVG","Large-file fast mode","Dark and light themes"],"codeRepository":"https://github.com/chaitmudunuri/cmx","programmingLanguage":["Rust","TypeScript"]}</script>
+</head>
+<body>
+<header class="site">
+  <div class="wrap bar">
+    <a class="brand" href="/">CMX</a>
+    <nav aria-label="Main"><a href="/features.html" class="on">Features</a><a href="/performance.html">Performance</a><a href="/downloads.html">Download</a><div class="has-sub"><a href="/docs.html">Docs</a><div class="sub"><a href="/docs/installation.html">Installation</a><a href="/docs/shortcuts.html">Keyboard shortcuts</a><a href="/docs/configuration.html">Configuration</a><a href="/docs/troubleshooting.html">Troubleshooting</a><a href="/docs/development.html">Developer setup</a></div></div><a href="/contributing.html">Contributing</a><a class="gh" href="https://github.com/chaitmudunuri/cmx" rel="noopener">GitHub</a></nav>
+  </div>
+</header>
+<main id="main">
+  <div class="wrap">
+<ol class="crumbs"><li><a href="/features.html">Features</a></li></ol>
+<h1>Features</h1>
+
+<p class="lede">Everything CMX does, and what it deliberately leaves out. Measurements are on
+the <a href="/performance.html">performance page</a>.</p>
+
+<h2>Editing</h2>
+<ul>
+<li><b>CodeMirror 6 core.</b> Multiple cursors, bracket matching and closing, folding, a
+  search-and-replace panel, highlighted selection matches and an active-line marker.</li>
+<li><b>14 language grammars, loaded on demand.</b> JavaScript/TypeScript, Python, Rust,
+  C/C++, Java, Go (via the C++ grammar), HTML, CSS, JSON, Markdown, SQL, XML, YAML, Shell and
+  Dockerfile. Opening a Rust file never waits on the Python grammar.</li>
+<li><b>Markdown with highlighted fenced code blocks</b> — headings, emphasis, code, quotes,
+  lists and links.</li>
+<li><b>Tab size</b> 2, 4 or 8; <b>word wrap</b>; zoom in, out and reset; six bundled monospace
+  fonts. See <a href="/docs/configuration.html">configuration</a>.</li>
+</ul>
+
+<h2 id="large-files">Large files</h2>
+<p>Files over <b>1.5&nbsp;MB</b> or <b>25,000 lines</b> automatically drop into fast mode:
+parsing and decorative extras switch off so scrolling and editing stay smooth, and a
+<code>⚡&nbsp;FAST</code> badge appears in the status bar so you always know which mode you are in.
+Reopening a file above the threshold always starts in fast mode.</p>
+
+<h2 id="vim-mode">Vim mode</h2>
+<p>Three levels, switched from the status-bar pill or the command palette.</p>
+<table>
+<thead><tr><th>Level</th><th>What you get</th></tr></thead>
+<tbody>
+<tr><td>Off <span class="pill">default</span></td><td>A plain editor. Nothing is intercepted.</td></tr>
+<tr><td>Friendly</td><td>Hints plus a forgiving Ex command set.</td></tr>
+<tr><td>Expert</td><td>The full motion vocabulary.</td></tr>
+</tbody>
+</table>
+<p>Ex commands: <code>:w</code> <code>:q</code> <code>:q!</code> <code>:wq</code> <code>:x</code>
+<code>:e</code> <code>:noh</code> <code>:bd</code> <code>:new</code>, alongside a which-key style
+hint bar and a mode pill reading <code>NORMAL</code>, <code>INSERT</code> or <code>VISUAL</code>.</p>
+
+<h2>Navigation</h2>
+<h3>File explorer</h3>
+<p>Create, rename and delete files and folders inline; reveal in Finder or Explorer; open and
+close a folder. The tree patches itself in place, so saving a file does not collapse and
+re-expand the whole sidebar.</p>
+<h3>Quick Open</h3>
+<p>A ranked file finder over the open workspace on <code>⌘P</code>, with filename hits ranked
+ahead of directory hits. The command palette is on <code>⌘⇧P</code> or <code>F1</code>, and
+<code>:line[,col]</code> jumps straight to a position.</p>
+<h3>Workspace search</h3>
+<p><code>⌘⇧F</code> searches every file in the workspace and groups matches by file with two lines
+of surrounding context. Results highlight the matched text and update on a 150&nbsp;ms debounce —
+and when you keep typing, in-flight searches are cancelled rather than queued.</p>
+<p>Search is implemented in Rust on ripgrep's <code>ignore</code> crate. It honours
+<code>.gitignore</code> and global excludes and skips hidden files out of the box, and needs
+<b>no external <code>rg</code> binary installed</b>.</p>
+<h3>Tabs</h3>
+<p>Dirty-state dots, per-tab scroll and memory, close one / right / others / all, and a
+confirmation before discarding unsaved changes.</p>
+
+<h2>Live preview</h2>
+<p><code>⌘⇧V</code> renders the document beside the source, split by a resizer you can drag and
+reset with a double-click.</p>
+<ul>
+<li><b>Markdown</b> — debounced, GitHub-flavored rendering.</li>
+<li><b>HTML</b> — rendered in a sandboxed <code>&lt;iframe&gt;</code>, so the document cannot
+  reach the filesystem.</li>
+<li><b>SVG</b> — previewed in place.</li>
+</ul>
+
+<h2>Status bar</h3>
+<p>Vim mode pill, detected language, <code>Ln</code>/<code>Col</code> that jumps to Go to Line and
+reports the document's total line count, selection size, word-wrap state, encoding, and loading
+and fast-mode indicators.</p>
+
+<h2>What CMX does not do</h2>
+<p>There is no plugin system that runs arbitrary native code, no built-in terminal multiplexer,
+and no cloud sync — settings are a small file that belongs in your dotfiles repository. The
+<a href="/contributing.html">roadmap</a> records what is being considered and why.</p>
+
+  </div>
+</main>
+<footer class="site">
+  <div class="wrap foot">
+    <p>CMX is MIT licensed and free software. Built with
+      <a href="https://tauri.app">Tauri 2</a>,
+      <a href="https://codemirror.net">CodeMirror 6</a> and
+      <a href="https://www.solidjs.com">Solid.js</a>, in Rust.
+      The <a href="https://github.com/chaitmudunuri/cmx">GitHub repository</a> is the source of truth for the code.</p>
+    <nav aria-label="Footer">
+      <a href="/features.html">Features</a>
+      <a href="/performance.html">Performance</a>
+      <a href="/downloads.html">Download</a>
+      <a href="/docs.html">Docs</a>
+      <a href="/contributing.html">Contributing</a>
+      <a href="https://github.com/chaitmudunuri/cmx">GitHub</a>
+    </nav>
+  </div>
+</footer>
+</body>
+</html>

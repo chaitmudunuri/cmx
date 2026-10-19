@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contributing to CMX — roadmap and good first issues</title>
+<meta name="description" content="Contribute to CMX: good first issues, the v0.2.0 packaging milestone, development setup, the pull-request process and the code of conduct.">
+<link rel="canonical" href="https://chaitmudunuri.github.io/cmx/contributing.html">
+<meta name="theme-color" content="#141416">
+<meta name="color-scheme" content="dark">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="CMX">
+<meta property="og:url" content="https://chaitmudunuri.github.io/cmx/contributing.html">
+<meta property="og:title" content="Contributing to CMX — roadmap and good first issues">
+<meta property="og:description" content="Contribute to CMX: good first issues, the v0.2.0 packaging milestone, development setup, the pull-request process and the code of conduct.">
+<meta property="og:image" content="https://chaitmudunuri.github.io/cmx/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="CMX code editor showing a dark-theme workspace with the file explorer open and syntax-highlighted TypeScript.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Contributing to CMX — roadmap and good first issues">
+<meta name="twitter:description" content="Contribute to CMX: good first issues, the v0.2.0 packaging milestone, development setup, the pull-request process and the code of conduct.">
+<meta name="twitter:image" content="https://chaitmudunuri.github.io/cmx/social-preview.png">
+
+<link rel="stylesheet" href="/assets/site.css">
+<link rel="icon" href="https://raw.githubusercontent.com/chaitmudunuri/cmx/main/app-icon.svg" type="image/svg+xml">
+
+<script type="application/ld+json" id="schema_0">{"@context":"https://schema.org","@type":"SoftwareSourceCode","name":"CMX","description":"Source code for CMX, a code editor built with Tauri 2, CodeMirror 6 and Solid.js.","codeRepository":"https://github.com/chaitmudunuri/cmx","programmingLanguage":["Rust","TypeScript"],"license":"https://github.com/chaitmudunuri/cmx/blob/main/LICENSE","runtimePlatform":"macOS, Linux, Windows","author":{"@type":"Person","name":"chaitmudunuri","url":"https://github.com/chaitmudunuri"}}</script>
+<script type="application/ld+json" id="schema_1">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Contributing","item":"https://chaitmudunuri.github.io/cmx/contributing.html"}]}</script>
+<script type="application/ld+json" id="schema_2">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"CMX","alternateName":"CMX editor","description":"A native-feeling code editor with Vim mode, workspace search, and live preview. No Electron, no bundled browser.","url":"https://chaitmudunuri.github.io/cmx/","applicationCategory":"DeveloperApplication","applicationSubCategory":"Text editor","operatingSystem":"macOS, Linux, Windows","softwareVersion":"0.1.0","license":"https://github.com/chaitmudunuri/cmx/blob/main/LICENSE","downloadUrl":"https://github.com/chaitmudunuri/cmx/releases/download/v0.1.0/cmx.editor_0.1.0_aarch64.dmg","installUrl":"https://chaitmudunuri.github.io/cmx/docs/installation.html","softwareHelp":"https://chaitmudunuri.github.io/cmx/docs.html","releaseNotes":"https://github.com/chaitmudunuri/cmx/releases/tag/v0.1.0","image":"https://chaitmudunuri.github.io/cmx/social-preview.png","author":{"@type":"Person","name":"chaitmudunuri","url":"https://github.com/chaitmudunuri"},"maintainer":{"@type":"Person","name":"chaitmudunuri"},"offers":[{"@type":"Offer","price":"0","priceCurrency":"USD"}],"featureList":["Vim mode with Friendly and Expert levels","Workspace-wide search that respects .gitignore","Quick Open ranked file finder","Live preview for Markdown, HTML and SVG","Large-file fast mode","Dark and light themes"],"codeRepository":"https://github.com/chaitmudunuri/cmx","programmingLanguage":["Rust","TypeScript"]}</script>
+</head>
+<body>
+<header class="site">
+  <div class="wrap bar">
+    <a class="brand" href="/">CMX</a>
+    <nav aria-label="Main"><a href="/features.html">Features</a><a href="/performance.html">Performance</a><a href="/downloads.html">Download</a><div class="has-sub"><a href="/docs.html">Docs</a><div class="sub"><a href="/docs/installation.html">Installation</a><a href="/docs/shortcuts.html">Keyboard shortcuts</a><a href="/docs/configuration.html">Configuration</a><a href="/docs/troubleshooting.html">Troubleshooting</a><a href="/docs/development.html">Developer setup</a></div></div><a href="/contributing.html" class="on">Contributing</a><a class="gh" href="https://github.com/chaitmudunuri/cmx" rel="noopener">GitHub</a></nav>
+  </div>
+</header>
+<main id="main">
+  <div class="wrap">
+<ol class="crumbs"><li><a href="/contributing.html">Contributing</a></li></ol>
+<h1>Contributing to CMX</h1>
+
+<p class="lede">CMX is pre-1.0 and shaped by the people who use it. Bug reports, platform testing
+and ideas are all genuinely useful — you do not need a finished patch to start.</p>
+
+<h2 id="good-first-issue">Good first contributions</h2>
+<p>These are the highest-value things you can do right now, in rough order of usefulness:</p>
+<ol>
+<li><b>Test a build on Linux or Windows.</b> Neither platform has a prebuilt binary and no
+maintainer coverage. <a href="https://github.com/chaitmudunuri/cmx/issues/new/choose">Open an issue</a> with your
+distribution, desktop environment and what broke — even "it works" is data.</li>
+<li><b>Report an editor-fidelity bug.</b> Vim motions, CodeMirror behaviour and large-file
+handling are where a careful user finds edge cases.</li>
+<li><b>Find a search regression.</b> Workspace search is subtle: <code>.gitignore</code> handling,
+binary files, very long lines and cancellation are easy to get wrong.</li>
+<li><b>Improve the documentation.</b> If something confused you, it will confuse the next person.</li>
+<li><b>Recapture a screenshot.</b> Follow the
+<a href="https://github.com/chaitmudunuri/cmx/blob/main/docs/screenshots/SHOT-LIST.md">capture guide</a>.</li>
+</ol>
+<p>Looking for an open problem? The <a href="https://github.com/chaitmudunuri/cmx/issues" rel="noopener">issue tracker</a> is
+the source of truth.</p>
+
+<h2 id="roadmap">Roadmap</h2>
+<p>The next release milestone is <b>v0.2.0 — packaging for all three platforms</b>: a macOS
+universal binary, published Linux and Windows installers, code signing, notarization and release
+checksums. After that: language-server support in v0.3.0, and a plugin API in v0.4.0.</p>
+<p>The full roadmap is <a href="https://github.com/chaitmudunuri/cmx/blob/main/ROADMAP.md">ROADMAP.md</a>, including what CMX
+deliberately will not do and why.</p>
+
+<h2 id="setup">Development setup</h2>
+<p>Node 20+ with pnpm, Rust stable, and the WebKitGTK toolchain on Linux. Full instructions are on
+the <a href="/docs/development.html">developer setup page</a>.</p>
+<pre><code>git clone https://github.com/chaitmudunuri/cmx.git
+cd cmx
+pnpm install
+pnpm tauri dev</code></pre>
+
+<h2 id="pull-requests">Pull requests</h2>
+<ol>
+<li>Branch off <code>main</code> — <code>git checkout -b fix/vim-word-motions</code>.</li>
+<li>Keep the diff focused. Unrelated cleanups make review slower for everyone; send them
+separately.</li>
+<li>Run the checks: <code>npx tsc --noEmit</code>, <code>pnpm build</code>,
+<code>cargo test</code>.</li>
+<li>Fill in the PR template and link the issue with <code>Fixes #123</code>.</li>
+<li>Commit messages are imperative and capitalized: <code>Fix tab close preserving sibling
+scroll position</code>.</li>
+</ol>
+<p>For a larger change, open an issue first so the approach can be agreed before the work is
+done. Review is best-effort and may take a few days.</p>
+
+<h2>Reporting bugs</h2>
+<p>Include your CMX version, OS and architecture, what you expected, what happened instead, and
+minimal reproduction steps. Use the <a href="https://github.com/chaitmudunuri/cmx/issues/new/choose" rel="noopener">bug
+report template</a>. Questions that are not bugs belong in
+<a href="https://github.com/chaitmudunuri/cmx/discussions" rel="noopener">Discussions</a>.</p>
+
+<h2>Security issues</h2>
+<p>Please do not open a public issue for a security problem. Report it privately through GitHub's
+<a href="https://github.com/chaitmudunuri/cmx/security/advisories/new" rel="noopener">security advisory form</a>. The scope
+and the response time are set out in the repository's
+<a href="https://github.com/chaitmudunuri/cmx/blob/main/SECURITY.md">SECURITY.md</a>.</p>
+
+<h2>Community</h2>
+<p>Everyone participating is expected to follow the
+<a href="https://github.com/chaitmudunuri/cmx/blob/main/CODE_OF_CONDUCT.md">Code of Conduct</a>, which is adapted from the
+Contributor Covenant.</p>
+
+  </div>
+</main>
+<footer class="site">
+  <div class="wrap foot">
+    <p>CMX is MIT licensed and free software. Built with
+      <a href="https://tauri.app">Tauri 2</a>,
+      <a href="https://codemirror.net">CodeMirror 6</a> and
+      <a href="https://www.solidjs.com">Solid.js</a>, in Rust.
+      The <a href="https://github.com/chaitmudunuri/cmx">GitHub repository</a> is the source of truth for the code.</p>
+    <nav aria-label="Footer">
+      <a href="/features.html">Features</a>
+      <a href="/performance.html">Performance</a>
+      <a href="/downloads.html">Download</a>
+      <a href="/docs.html">Docs</a>
+      <a href="/contributing.html">Contributing</a>
+      <a href="https://github.com/chaitmudunuri/cmx">GitHub</a>
+    </nav>
+  </div>
+</footer>
+</body>
+</html>

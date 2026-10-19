@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Developer setup — building CMX from source</title>
+<meta name="description" content="Build CMX from source: prerequisites, pnpm tauri dev, the typecheck and cargo test suite, the benchmark harness and the project layout.">
+<link rel="canonical" href="https://chaitmudunuri.github.io/cmx/docs/development.html">
+<meta name="theme-color" content="#141416">
+<meta name="color-scheme" content="dark">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="CMX">
+<meta property="og:url" content="https://chaitmudunuri.github.io/cmx/docs/development.html">
+<meta property="og:title" content="Developer setup — building CMX from source">
+<meta property="og:description" content="Build CMX from source: prerequisites, pnpm tauri dev, the typecheck and cargo test suite, the benchmark harness and the project layout.">
+<meta property="og:image" content="https://chaitmudunuri.github.io/cmx/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="CMX code editor showing a dark-theme workspace with the file explorer open and syntax-highlighted TypeScript.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Developer setup — building CMX from source">
+<meta name="twitter:description" content="Build CMX from source: prerequisites, pnpm tauri dev, the typecheck and cargo test suite, the benchmark harness and the project layout.">
+<meta name="twitter:image" content="https://chaitmudunuri.github.io/cmx/social-preview.png">
+
+<link rel="stylesheet" href="/assets/site.css">
+<link rel="icon" href="https://raw.githubusercontent.com/chaitmudunuri/cmx/main/app-icon.svg" type="image/svg+xml">
+
+<script type="application/ld+json" id="schema_0">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Docs","item":"https://chaitmudunuri.github.io/cmx/docs.html"},{"@type":"ListItem","position":2,"name":"Developer setup","item":"https://chaitmudunuri.github.io/cmx/docs/development.html"}]}</script>
+<script type="application/ld+json" id="schema_1">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"CMX","alternateName":"CMX editor","description":"A native-feeling code editor with Vim mode, workspace search, and live preview. No Electron, no bundled browser.","url":"https://chaitmudunuri.github.io/cmx/","applicationCategory":"DeveloperApplication","applicationSubCategory":"Text editor","operatingSystem":"macOS, Linux, Windows","softwareVersion":"0.1.0","license":"https://github.com/chaitmudunuri/cmx/blob/main/LICENSE","downloadUrl":"https://github.com/chaitmudunuri/cmx/releases/download/v0.1.0/cmx.editor_0.1.0_aarch64.dmg","installUrl":"https://chaitmudunuri.github.io/cmx/docs/installation.html","softwareHelp":"https://chaitmudunuri.github.io/cmx/docs.html","releaseNotes":"https://github.com/chaitmudunuri/cmx/releases/tag/v0.1.0","image":"https://chaitmudunuri.github.io/cmx/social-preview.png","author":{"@type":"Person","name":"chaitmudunuri","url":"https://github.com/chaitmudunuri"},"maintainer":{"@type":"Person","name":"chaitmudunuri"},"offers":[{"@type":"Offer","price":"0","priceCurrency":"USD"}],"featureList":["Vim mode with Friendly and Expert levels","Workspace-wide search that respects .gitignore","Quick Open ranked file finder","Live preview for Markdown, HTML and SVG","Large-file fast mode","Dark and light themes"],"codeRepository":"https://github.com/chaitmudunuri/cmx","programmingLanguage":["Rust","TypeScript"]}</script>
+</head>
+<body>
+<header class="site">
+  <div class="wrap bar">
+    <a class="brand" href="/">CMX</a>
+    <nav aria-label="Main"><a href="/features.html">Features</a><a href="/performance.html">Performance</a><a href="/downloads.html">Download</a><div class="has-sub"><a href="/docs.html">Docs</a><div class="sub"><a href="/docs/installation.html">Installation</a><a href="/docs/shortcuts.html">Keyboard shortcuts</a><a href="/docs/configuration.html">Configuration</a><a href="/docs/troubleshooting.html">Troubleshooting</a><a href="/docs/development.html">Developer setup</a></div></div><a href="/contributing.html">Contributing</a><a class="gh" href="https://github.com/chaitmudunuri/cmx" rel="noopener">GitHub</a></nav>
+  </div>
+</header>
+<main id="main">
+  <div class="wrap">
+<ol class="crumbs"><li><a href="/docs.html">Docs</a></li><li><a href="/docs/development.html">Developer setup</a></li></ol>
+<h1>Developer setup</h1>
+
+<p class="lede">Build CMX from source, run the tests, and profile a release build. The repository
+is at <a href="https://github.com/chaitmudunuri/cmx">https://github.com/chaitmudunuri/cmx</a>.</p>
+
+<h2>Prerequisites</h2>
+<ul>
+<li><a href="https://nodejs.org">Node 20+</a> with <a href="https://pnpm.io">pnpm</a></li>
+<li><a href="https://rustup.rs">Rust stable</a> — macOS also needs <code>xcode-select --install</code></li>
+<li>Linux also needs the WebKitGTK toolchain — see
+<a href="/docs/installation.html#linux">Linux installation</a></li>
+</ul>
+<p>The full platform list is maintained by the
+<a href="https://v2.tauri.app/start/prerequisites/">Tauri project</a>.</p>
+
+<h2>Run it</h2>
+<pre><code>git clone https://github.com/chaitmudunuri/cmx.git
+cd cmx
+pnpm install
+pnpm tauri dev      # Vite + Tauri with hot reload at http://127.0.0.1:1420</code></pre>
+<p>Useful while developing:</p>
+<pre><code>pnpm dev           # frontend only, no native shell
+pnpm build         # production frontend bundle
+pnpm tauri build   # full release bundles for this platform</code></pre>
+
+<h2>Checks</h2>
+<pre><code>npx tsc --noEmit                    # frontend typecheck
+pnpm build                           # production build
+cd src-tauri &amp;&amp; cargo test         # Rust unit tests
+cd src-tauri &amp;&amp; cargo clippy -- -D warnings</code></pre>
+<p>CI runs the typecheck, the frontend build and the Rust tests on every push across Linux,
+macOS and Windows.</p>
+
+<h2>Benchmarks</h2>
+<pre><code>pnpm tauri build     # the harness profiles the release binary
+pnpm bench --runs 5</code></pre>
+<p>The harness samples the running binary and prints medians, plus a machine-readable
+<code>__CMX_BENCH__</code> JSON line. Full methodology is on the
+<a href="/performance.html#methodology">performance page</a>.</p>
+
+<h2>Project layout</h2>
+<table>
+<thead><tr><th>Path</th><th>Contents</th></tr></thead>
+<tbody>
+<tr><td><code>src/</code></td><td>Solid.js frontend. <code>App.tsx</code> wires shortcuts, themes, modals and layout.</td></tr>
+<tr><td><code>src/components/</code></td><td><code>Editor.tsx</code> owns the CodeMirror lifecycle; <code>Sidebar.tsx</code>, <code>QuickOpen.tsx</code>, <code>LivePreview.tsx</code> and the status and title bars.</td></tr>
+<tr><td><code>src/stores/editor.ts</code></td><td>Central signal store: files, tree, search, settings, session.</td></tr>
+<tr><td><code>src-tauri/src/</code></td><td><code>main.rs</code> sets up Tauri and native menus; <code>commands.rs</code> holds file IO, directory listing, file search, workspace search and preview.</td></tr>
+<tr><td><code>scripts/</code></td><td>Benchmark harness, screenshot capture, and the generator for this website and the social preview.</td></tr>
+<tr><td><code>docs/</code></td><td>This website, plus the README screenshots.</td></tr>
+</tbody>
+</table>
+
+<h2>Contributing</h2>
+<p>See <a href="/contributing.html">contributing</a> for the commit style, review expectations
+and code of conduct, or the repository's
+<a href="https://github.com/chaitmudunuri/cmx/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a> directly.</p>
+
+  </div>
+</main>
+<footer class="site">
+  <div class="wrap foot">
+    <p>CMX is MIT licensed and free software. Built with
+      <a href="https://tauri.app">Tauri 2</a>,
+      <a href="https://codemirror.net">CodeMirror 6</a> and
+      <a href="https://www.solidjs.com">Solid.js</a>, in Rust.
+      The <a href="https://github.com/chaitmudunuri/cmx">GitHub repository</a> is the source of truth for the code.</p>
+    <nav aria-label="Footer">
+      <a href="/features.html">Features</a>
+      <a href="/performance.html">Performance</a>
+      <a href="/downloads.html">Download</a>
+      <a href="/docs.html">Docs</a>
+      <a href="/contributing.html">Contributing</a>
+      <a href="https://github.com/chaitmudunuri/cmx">GitHub</a>
+    </nav>
+  </div>
+</footer>
+</body>
+</html>

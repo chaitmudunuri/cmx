@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Install CMX on macOS, Linux and Windows</title>
+<meta name="description" content="Install CMX on macOS, Linux and Windows, including Gatekeeper, WebKitGTK and WebView2 prerequisites, and how to open your first folder.">
+<link rel="canonical" href="https://chaitmudunuri.github.io/cmx/docs/installation.html">
+<meta name="theme-color" content="#141416">
+<meta name="color-scheme" content="dark">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="CMX">
+<meta property="og:url" content="https://chaitmudunuri.github.io/cmx/docs/installation.html">
+<meta property="og:title" content="Install CMX on macOS, Linux and Windows">
+<meta property="og:description" content="Install CMX on macOS, Linux and Windows, including Gatekeeper, WebKitGTK and WebView2 prerequisites, and how to open your first folder.">
+<meta property="og:image" content="https://chaitmudunuri.github.io/cmx/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="CMX code editor showing a dark-theme workspace with the file explorer open and syntax-highlighted TypeScript.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Install CMX on macOS, Linux and Windows">
+<meta name="twitter:description" content="Install CMX on macOS, Linux and Windows, including Gatekeeper, WebKitGTK and WebView2 prerequisites, and how to open your first folder.">
+<meta name="twitter:image" content="https://chaitmudunuri.github.io/cmx/social-preview.png">
+
+<link rel="stylesheet" href="/assets/site.css">
+<link rel="icon" href="https://raw.githubusercontent.com/chaitmudunuri/cmx/main/app-icon.svg" type="image/svg+xml">
+
+<script type="application/ld+json" id="schema_0">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Docs","item":"https://chaitmudunuri.github.io/cmx/docs.html"},{"@type":"ListItem","position":2,"name":"Installation","item":"https://chaitmudunuri.github.io/cmx/docs/installation.html"}]}</script>
+<script type="application/ld+json" id="schema_1">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"CMX","alternateName":"CMX editor","description":"A native-feeling code editor with Vim mode, workspace search, and live preview. No Electron, no bundled browser.","url":"https://chaitmudunuri.github.io/cmx/","applicationCategory":"DeveloperApplication","applicationSubCategory":"Text editor","operatingSystem":"macOS, Linux, Windows","softwareVersion":"0.1.0","license":"https://github.com/chaitmudunuri/cmx/blob/main/LICENSE","downloadUrl":"https://github.com/chaitmudunuri/cmx/releases/download/v0.1.0/cmx.editor_0.1.0_aarch64.dmg","installUrl":"https://chaitmudunuri.github.io/cmx/docs/installation.html","softwareHelp":"https://chaitmudunuri.github.io/cmx/docs.html","releaseNotes":"https://github.com/chaitmudunuri/cmx/releases/tag/v0.1.0","image":"https://chaitmudunuri.github.io/cmx/social-preview.png","author":{"@type":"Person","name":"chaitmudunuri","url":"https://github.com/chaitmudunuri"},"maintainer":{"@type":"Person","name":"chaitmudunuri"},"offers":[{"@type":"Offer","price":"0","priceCurrency":"USD"}],"featureList":["Vim mode with Friendly and Expert levels","Workspace-wide search that respects .gitignore","Quick Open ranked file finder","Live preview for Markdown, HTML and SVG","Large-file fast mode","Dark and light themes"],"codeRepository":"https://github.com/chaitmudunuri/cmx","programmingLanguage":["Rust","TypeScript"]}</script>
+</head>
+<body>
+<header class="site">
+  <div class="wrap bar">
+    <a class="brand" href="/">CMX</a>
+    <nav aria-label="Main"><a href="/features.html">Features</a><a href="/performance.html">Performance</a><a href="/downloads.html">Download</a><div class="has-sub"><a href="/docs.html">Docs</a><div class="sub"><a href="/docs/installation.html">Installation</a><a href="/docs/shortcuts.html">Keyboard shortcuts</a><a href="/docs/configuration.html">Configuration</a><a href="/docs/troubleshooting.html">Troubleshooting</a><a href="/docs/development.html">Developer setup</a></div></div><a href="/contributing.html">Contributing</a><a class="gh" href="https://github.com/chaitmudunuri/cmx" rel="noopener">GitHub</a></nav>
+  </div>
+</header>
+<main id="main">
+  <div class="wrap">
+<ol class="crumbs"><li><a href="/docs.html">Docs</a></li><li><a href="/docs/installation.html">Installation</a></li></ol>
+<h1>Installation</h1>
+
+<p class="lede">CMX runs on macOS, Linux and Windows. Prebuilt binaries exist for macOS on Apple
+Silicon; the other platforms build from source in about two minutes.</p>
+
+<h2>macOS</h2>
+<h3>1. Download</h3>
+<p>Grab the <code>.dmg</code> from the
+<a href="https://github.com/chaitmudunuri/cmx/releases/latest">latest release</a>, or see
+<a href="/downloads.html#macos">the download page</a> for a copy-pasteable command.</p>
+<h3>2. Install</h3>
+<p>Open the <code>.dmg</code> and drag <b>cmx editor</b> into Applications.</p>
+<h3>3. First launch</h3>
+<p>CMX is not code-signed, so macOS blocks it on first run. Either right-click the app and choose
+<b>Open</b>, or run:</p>
+<pre><code>xattr -dr com.apple.quarantine "/Applications/cmx editor.app"</code></pre>
+<h3>4. Open a folder</h3>
+<p>Launch CMX, then use <b>Open folder</b> in the file explorer to point it at a project. CMX
+restores your last session — open tabs, folder and untitled buffers — on next launch.</p>
+
+<h2 id="linux">Linux</h2>
+<h3>1. Install the toolchain</h3>
+<p>CMX renders through WebKitGTK, so its build and runtime dependencies must be present:</p>
+<pre><code># Debian / Ubuntu
+sudo apt install libwebkit2gtk-4.1-dev build-essential curl wget file \
+  libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev
+
+# Fedora
+sudo dnf install webkit2gtk4.1-devel openssl-devel libxdo-devel \
+  libappindicator-gtk3-devel librsvg2-devel</code></pre>
+<h3>2. Install Rust and Node</h3>
+<pre><code>curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install -y nodejs</code></pre>
+<h3>3. Build</h3>
+<pre><code>git clone https://github.com/chaitmudunuri/cmx.git
+cd cmx
+corepack enable &amp;&amp; corepack prepare pnpm@latest --activate
+pnpm install
+pnpm tauri build</code></pre>
+<p>Bundles land in <code>src-tauri/target/release/bundle/</code>.</p>
+
+<h2>Windows</h2>
+<h3>1. Install the prerequisites</h3>
+<p>Install <a href="https://rustup.rs">Rust</a> and
+<a href="https://nodejs.org">Node 20+</a>. The
+<a href="https://developer.microsoft.com/microsoft-edge/webview2/">WebView2 runtime</a> is
+pre-installed on Windows 11; on Windows 10 install the Evergreen runtime.</p>
+<p>Building the NSIS installer additionally needs the
+<a href="https://visualstudio.microsoft.com/downloads/">Visual Studio Build Tools</a> with the
+<b>Desktop development with C++</b> workload.</p>
+<h3>2. Build</h3>
+<pre><code>git clone https://github.com/chaitmudunuri/cmx.git
+cd cmx
+corepack enable
+pnpm install
+pnpm tauri dev      # try it without a full bundle</code></pre>
+<h3>3. Package</h3>
+<pre><code>pnpm tauri build --bundles nsis</code></pre>
+
+<h2>Updating</h2>
+<p>CMX does not self-update. Replace the binary or re-run the installer from the
+<a href="https://github.com/chaitmudunuri/cmx/releases/latest">latest release</a>. Your settings live in local storage and survive
+an upgrade.</p>
+
+<h2>If something goes wrong</h2>
+<p>See <a href="/docs/troubleshooting.html">troubleshooting</a>. If it is not covered there,
+<a href="https://github.com/chaitmudunuri/cmx/issues/new/choose" rel="noopener">open an issue</a> with your platform and
+version.</p>
+
+  </div>
+</main>
+<footer class="site">
+  <div class="wrap foot">
+    <p>CMX is MIT licensed and free software. Built with
+      <a href="https://tauri.app">Tauri 2</a>,
+      <a href="https://codemirror.net">CodeMirror 6</a> and
+      <a href="https://www.solidjs.com">Solid.js</a>, in Rust.
+      The <a href="https://github.com/chaitmudunuri/cmx">GitHub repository</a> is the source of truth for the code.</p>
+    <nav aria-label="Footer">
+      <a href="/features.html">Features</a>
+      <a href="/performance.html">Performance</a>
+      <a href="/downloads.html">Download</a>
+      <a href="/docs.html">Docs</a>
+      <a href="/contributing.html">Contributing</a>
+      <a href="https://github.com/chaitmudunuri/cmx">GitHub</a>
+    </nav>
+  </div>
+</footer>
+</body>
+</html>
